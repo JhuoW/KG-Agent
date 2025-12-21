@@ -223,10 +223,20 @@ class AGCAgent:
         accumulator = PathAccumulator()
         accumulator.add_paths(result_beams)
 
-        # Format for evaluation
-        predictions = accumulator.format_for_evaluation(self.config.output_top_k)
+        # Format for evaluation using LLM-based answer extraction
+        # (Section 3.5.2 of CLAUDE.md - Multi-Path Aggregation)
+        predictions = accumulator.format_for_evaluation_with_llm(
+            question=question,
+            model=self.model,
+            tokenizer=self.tokenizer,
+            top_k=self.config.output_top_k
+        )
         raw_paths = accumulator.get_paths()[:self.config.output_top_k]
-        answers = accumulator.get_answers()
+        answers = accumulator.get_answers_with_llm(
+            question=question,
+            model=self.model,
+            tokenizer=self.tokenizer
+        )
 
         # Get statistics
         stats = self.beam_manager.get_statistics()

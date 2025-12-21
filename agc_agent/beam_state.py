@@ -52,6 +52,7 @@ class BeamState:
 
     # Track explored relations at each entity to enable proper backtracking
     explored_relations: List[Set[str]] = field(default_factory=list)
+    
 
     def __post_init__(self):
         """Initialize visited set from path."""
@@ -457,6 +458,7 @@ class PathAccumulator:
     def format_for_evaluation(self, top_k: int = -1) -> List[str]:
         """
         Format paths for evaluation (matching GCR output format).
+        Uses naive last-entity extraction.
 
         Format: "# Reasoning Path:\n{path}\n# Answer:\n{answer}"
 
@@ -481,9 +483,133 @@ class PathAccumulator:
 
         return results
 
+    def format_for_evaluation_with_llm(
+        self,
+        question: str,
+        model,
+        tokenizer,
+        top_k: int = -1
+    ) -> List[str]:
+        """
+        Format paths for evaluation using LLM to extract answers.
+
+        Uses the Multi-Path Aggregation approach from CLAUDE.md Section 3.5.2
+        to identify which entity in each path answers the question.
+
+        Format: "# Reasoning Path:\n{path}\n# Answer:\n{answer}"
+
+        Args:
+            question: The natural language question
+            model: The LLM model
+            tokenizer: The tokenizer
+            top_k: Number of paths to return (-1 for all)
+
+        Returns:
+            List of formatted path strings with LLM-extracted answers
+        """
+        paths = self.get_paths()
+        if top_k > 0:
+            paths = paths[:top_k]
+
+        results = []
+        for path_str, score in paths:
+            # Use LLM to extract the answer entity from the path
+            answer = self._extract_answer_with_llm(
+                question, path_str, model, tokenizer
+            )
+
+            formatted = f"# Reasoning Path:\n{path_str}\n# Answer:\n{answer}"
+            results.append(formatted)
+
+        return results
+
+    def _extract_answer_with_llm(
+        self,
+        question: str,
+        path_str: str,
+        model,
+        tokenizer
+    ) -> str:
+        """
+        Use LLM to extract the answer entity from a reasoning path.
+
+        Based on CLAUDE.md Section 3.5.2 Aggregation Prompt.
+        """
+        import torch
+
+        # Extract all entities from the path
+        parts = path_str.split(" -> ")
+        entities = [parts[i] for i in range(0, len(parts), 2)]  # entities at even indices
+
+        if len(entities) <= 1:
+            return entities[0] if entities else ""
+
+        # Build prompt for answer extraction
+        system_prompt = """You are a Knowledge Graph reasoning assistant. Given a question and a reasoning path, identify which entity in the path answers the question.
+
+The answer must be one of the entities in the path. Choose the entity whose TYPE matches what the question asks for."""
+
+        entities_str = "\n".join(f"- {e}" for e in entities)
+        user_prompt = f"""Question: {question}
+
+Reasoning Path: {path_str}
+
+Entities in path:
+{entities_str}
+
+Which entity answers the question? Output only the entity name, nothing else."""
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
+
+        prompt = tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True
+        )
+
+        inputs = tokenizer(prompt, return_tensors="pt", add_special_tokens=False)
+        input_ids = inputs.input_ids.to(model.device)
+        attention_mask = inputs.attention_mask.to(model.device)
+
+        try:
+            with torch.inference_mode():
+                outputs = model.generate(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    max_new_tokens=64,
+                    do_sample=False,
+                    num_return_sequences=1,
+                    pad_token_id=tokenizer.eos_token_id
+                )
+
+            output_text = tokenizer.decode(
+                outputs[0][input_ids.shape[1]:],
+                skip_special_tokens=True
+            ).strip()
+
+            # Try to match output to one of the entities
+            for entity in entities:
+                if entity.lower() in output_text.lower() or output_text.lower() in entity.lower():
+                    return entity
+
+            # If no match, return the LLM output if it looks like an entity
+            if output_text and len(output_text) < 200:
+                return output_text
+
+            # Fallback to last entity
+            return entities[-1]
+
+        except Exception as e:
+            # Fallback to last entity on error
+            return entities[-1] if entities else ""
+
     def get_answers(self) -> List[Tuple[str, float]]:
         """
         Get unique answers with their best scores.
+        Uses naive last-entity extraction.
 
         Returns:
             List of (answer, score) tuples
@@ -492,6 +618,28 @@ class PathAccumulator:
         for path_str, score in self.paths:
             parts = path_str.split(" -> ")
             answer = parts[-1] if parts else ""
+            if answer not in answer_scores or score > answer_scores[answer]:
+                answer_scores[answer] = score
+
+        return sorted(answer_scores.items(), key=lambda x: x[1], reverse=True)
+
+    def get_answers_with_llm(
+        self,
+        question: str,
+        model,
+        tokenizer
+    ) -> List[Tuple[str, float]]:
+        """
+        Get unique answers with their best scores using LLM extraction.
+
+        Returns:
+            List of (answer, score) tuples
+        """
+        answer_scores: dict = {}
+        for path_str, score in self.paths:
+            answer = self._extract_answer_with_llm(
+                question, path_str, model, tokenizer
+            )
             if answer not in answer_scores or score > answer_scores[answer]:
                 answer_scores[answer] = score
 
