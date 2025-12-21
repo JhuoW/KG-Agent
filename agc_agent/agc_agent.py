@@ -47,7 +47,7 @@ class AGCAgentConfig:
 
     # Generation parameters (aligned with GCR)
     use_constrained_generation: bool = True
-    max_new_tokens: int = 128
+    max_new_tokens: int = 1024
     generation_mode: str = "beam"  # greedy, beam, sampling
 
     # Output parameters
@@ -410,7 +410,7 @@ Select the best hop (enter number) or STOP if current entity answers the questio
 
         outputs = self.model.generate(
             input_ids=input_ids,
-            max_new_tokens=32,
+            max_new_tokens=1024,
             do_sample=False,
             pad_token_id=self.tokenizer.eos_token_id
         )

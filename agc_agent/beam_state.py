@@ -50,15 +50,22 @@ class BeamState:
     # Track visited (entity, relation) pairs to avoid cycles
     visited: Set[Tuple[str, str]] = field(default_factory=set)
 
+    # Track visited entities to prevent entity-level cycles
+    visited_entities: Set[str] = field(default_factory=set)
+
     # Track explored relations at each entity to enable proper backtracking
     explored_relations: List[Set[str]] = field(default_factory=list)
-    
+
 
     def __post_init__(self):
         """Initialize visited set from path."""
         if self.path:
             for head, rel, tail in self.path:
                 self.visited.add((head, rel))
+                self.visited_entities.add(head)
+                self.visited_entities.add(tail)
+        # Add current entity to visited
+        self.visited_entities.add(self.current_entity)
 
     def extend(
         self,
@@ -86,6 +93,10 @@ class BeamState:
         new_visited = self.visited.copy()
         new_visited.add((self.current_entity, relation))
 
+        # Track visited entities
+        new_visited_entities = self.visited_entities.copy()
+        new_visited_entities.add(next_entity)
+
         # Track explored relations for backtracking
         new_explored = [s.copy() for s in self.explored_relations]
         if len(new_explored) <= self.depth:
@@ -102,6 +113,7 @@ class BeamState:
             backtrack_count=self.backtrack_count,
             status=BeamStatus.ACTIVE,
             visited=new_visited,
+            visited_entities=new_visited_entities,
             explored_relations=new_explored
         )
 
@@ -150,6 +162,7 @@ class BeamState:
             backtrack_count=self.backtrack_count + 1,
             status=BeamStatus.ACTIVE,
             visited=new_visited,
+            visited_entities=self.visited_entities.copy(),
             explored_relations=new_explored
         )
 
@@ -170,6 +183,7 @@ class BeamState:
             backtrack_count=self.backtrack_count,
             status=BeamStatus.COMPLETED,
             visited=self.visited.copy(),
+            visited_entities=self.visited_entities.copy(),
             explored_relations=[s.copy() for s in self.explored_relations]
         )
 
@@ -183,6 +197,7 @@ class BeamState:
             backtrack_count=self.backtrack_count,
             status=BeamStatus.PRUNED,
             visited=self.visited.copy(),
+            visited_entities=self.visited_entities.copy(),
             explored_relations=[s.copy() for s in self.explored_relations]
         )
 
@@ -199,6 +214,10 @@ class BeamState:
     def has_visited(self, entity: str, relation: str) -> bool:
         """Check if (entity, relation) has been visited."""
         return (entity, relation) in self.visited
+
+    def has_visited_entity(self, entity: str) -> bool:
+        """Check if an entity has been visited (to prevent cycles)."""
+        return entity in self.visited_entities
 
     def path_to_string(self) -> str:
         """
@@ -581,7 +600,7 @@ Which entity answers the question? Output only the entity name, nothing else."""
                 outputs = model.generate(
                     input_ids=input_ids,
                     attention_mask=attention_mask,
-                    max_new_tokens=64,
+                    max_new_tokens=1024,
                     do_sample=False,
                     num_return_sequences=1,
                     pad_token_id=tokenizer.eos_token_id

@@ -326,7 +326,7 @@ class RelationSelector:
         gen_kwargs = {
             "input_ids": input_ids,
             "attention_mask": attention_mask,
-            "max_new_tokens": 128,
+            "max_new_tokens": 1024,
             "prefix_allowed_tokens_fn": prefix_allowed_fn,
             "pad_token_id": self.tokenizer.eos_token_id,
             "return_dict_in_generate": True,
@@ -372,11 +372,12 @@ class RelationSelector:
                     raw_output=output_text
                 ))
 
-        # If no valid relation parsed, return first valid relation as fallback
-        if not results and unvisited_relations:
+        # Fill up to top_k with remaining relations to ensure diversity
+        remaining = [r for r in unvisited_relations if r not in seen_relations]
+        for rel in remaining[:self.top_k - len(results)]:
             results.append(SelectionResult(
-                item=unvisited_relations[0],
-                probability=0.5,
+                item=rel,
+                probability=0.5 / (len(results) + 1),
                 raw_output=""
             ))
 
@@ -526,6 +527,12 @@ class EntitySelector:
         if not valid_entities:
             return []
 
+        # Filter out already-visited entities to prevent cycles
+        valid_entities = [e for e in valid_entities if not beam.has_visited_entity(e)]
+
+        if not valid_entities:
+            return []
+
         # If only one entity, return it directly
         if len(valid_entities) == 1:
             return [SelectionResult(
@@ -615,11 +622,12 @@ class EntitySelector:
                     raw_output=output_text
                 ))
 
-        # Fallback
-        if not results and valid_entities:
+        # Fill up to top_k with remaining entities to ensure diversity
+        remaining = [e for e in valid_entities if e not in seen_entities]
+        for ent in remaining[:self.top_k - len(results)]:
             results.append(SelectionResult(
-                item=valid_entities[0],
-                probability=0.5,
+                item=ent,
+                probability=0.5 / (len(results) + 1),
                 raw_output=""
             ))
 

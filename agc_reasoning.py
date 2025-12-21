@@ -47,7 +47,7 @@ class AGCReasoningModel:
                           help="HuggingFace model path")
         parser.add_argument("--maximum_token", type=int, default=4096,
                           help="Max input length")
-        parser.add_argument("--max_new_tokens", type=int, default=256,
+        parser.add_argument("--max_new_tokens", type=int, default=1024,
                           help="Max tokens to generate per step")
         parser.add_argument("--dtype", choices=["fp32", "fp16", "bf16"],
                           default="bf16")
@@ -130,7 +130,7 @@ def process_sample(
 
     try:
         # Run AGC-Agent reasoning
-        
+
         result = agent.reason(
             question=question_for_llm,
             graph_triples=triples,
