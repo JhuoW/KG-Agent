@@ -488,7 +488,8 @@ class PathAccumulator:
         question: str,
         model,
         tokenizer,
-        top_k: int = -1
+        top_k: int = -1,
+        topic_entities: List[str] = None
     ) -> List[str]:
         """
         Format paths for evaluation using LLM to extract answers.
@@ -515,7 +516,7 @@ class PathAccumulator:
         for path_str, score in paths:
             # Use LLM to extract the answer entity from the path
             answer = self._extract_answer_with_llm(
-                question, path_str, model, tokenizer
+                question, path_str, model, tokenizer, topic_entities
             )
 
             formatted = f"# Reasoning Path:\n{path_str}\n# Answer:\n{answer}"
@@ -528,7 +529,8 @@ class PathAccumulator:
         question: str,
         path_str: str,
         model,
-        tokenizer
+        tokenizer,
+        topic_entities: List[str] = None
     ) -> str:
         """
         Use LLM to extract the answer entity from a reasoning path.
@@ -590,14 +592,28 @@ Which entity answers the question? Output only the entity name, nothing else."""
                 skip_special_tokens=True
             ).strip()
 
-            # Try to match output to one of the entities
-            for entity in entities:
-                if entity.lower() in output_text.lower() or output_text.lower() in entity.lower():
+            # Clean the output - take only the first line and remove common prefixes
+            first_line = output_text.split('\n')[0].strip()
+            # Remove common prefixes like "Answer:", "The answer is:", etc.
+            for prefix in ["Answer:", "The answer is:", "The answer is", "answer:"]:
+                if first_line.lower().startswith(prefix.lower()):
+                    first_line = first_line[len(prefix):].strip()
+
+            # Get non-topic entities for matching
+            non_topic_entities = [e for e in entities if topic_entities is None or e not in topic_entities]
+
+            # Try to match output to one of the non-topic entities
+            for entity in sorted(set(non_topic_entities), key=len, reverse=True):
+                # Exact match first
+                if first_line.lower().strip() == entity.lower():
+                    return entity
+                # Then containment
+                if entity.lower() in first_line.lower():
                     return entity
 
-            # If no match, return the LLM output if it looks like an entity
-            if output_text and len(output_text) < 200:
-                return output_text
+            # If no match found, return the first non-topic entity (most likely the answer)
+            if non_topic_entities:
+                return non_topic_entities[0]
 
             # Fallback to last entity
             return entities[-1]
@@ -627,7 +643,8 @@ Which entity answers the question? Output only the entity name, nothing else."""
         self,
         question: str,
         model,
-        tokenizer
+        tokenizer,
+        topic_entities: List[str] = None
     ) -> List[Tuple[str, float]]:
         """
         Get unique answers with their best scores using LLM extraction.
@@ -638,7 +655,7 @@ Which entity answers the question? Output only the entity name, nothing else."""
         answer_scores: dict = {}
         for path_str, score in self.paths:
             answer = self._extract_answer_with_llm(
-                question, path_str, model, tokenizer
+                question, path_str, model, tokenizer, topic_entities
             )
             if answer not in answer_scores or score > answer_scores[answer]:
                 answer_scores[answer] = score

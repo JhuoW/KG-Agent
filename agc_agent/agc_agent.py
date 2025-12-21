@@ -229,13 +229,15 @@ class AGCAgent:
             question=question,
             model=self.model,
             tokenizer=self.tokenizer,
-            top_k=self.config.output_top_k
+            top_k=self.config.output_top_k,
+            topic_entities=topic_entities
         )
         raw_paths = accumulator.get_paths()[:self.config.output_top_k]
         answers = accumulator.get_answers_with_llm(
             question=question,
             model=self.model,
-            tokenizer=self.tokenizer
+            tokenizer=self.tokenizer,
+            topic_entities=topic_entities
         )
 
         # Get statistics

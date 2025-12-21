@@ -1,0 +1,15 @@
+# AGC-Agent
+
+current result:
+Accuracy: 46.173254012149 
+Hit: 61.0 
+F1: 31.83137382137911 
+Precision: 37.28015873015873 
+Recall: 36.76860802089733 
+Path F1: 34.00222127752503 
+Path Precision: 40.18333333333333 
+Path Recall: 39.89954790789636 
+Path Answer F1: 39.39404306936533 
+Path Answer 
+Precision: 45.595238095238095 
+Path Answer Recall: 46.173254012149
