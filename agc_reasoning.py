@@ -115,6 +115,11 @@ def process_sample(
     graph_triples = data["graph"]
     sample_id = data["id"]
 
+    # Ensure question ends with "?" for LLM input
+    question_for_llm = question
+    if not question_for_llm.endswith("?"):
+        question_for_llm += "?"
+
     # Convert graph triples to (head, relation, tail) format
     triples = [(t[0], t[1], t[2]) for t in graph_triples]
 
@@ -125,8 +130,9 @@ def process_sample(
 
     try:
         # Run AGC-Agent reasoning
+        
         result = agent.reason(
-            question=question,
+            question=question_for_llm,
             graph_triples=triples,
             topic_entities=q_entity
         )
@@ -138,7 +144,7 @@ def process_sample(
 
         return {
             "id": sample_id,
-            "question": question,
+            "question": question,  # Use original question in output
             "prediction": result.predictions,
             "ground_truth": answer,
             "ground_truth_paths": ground_paths,
