@@ -91,33 +91,33 @@ Output format: "3, 1, 5" or "STOP" or "STOP, 2, 4" (numbers in order of preferen
 
 AGGREGATOR_SYSTEM_PROMPT = """You are an expert knowledge graph reasoner performing GROUNDED answer extraction.
 
-CRITICAL: You can ONLY output answers that appear as the FINAL ENTITY in one of the provided reasoning paths.
+CRITICAL: You can ONLY output answers that appear in the provided reasoning paths.
 You CANNOT invent, imagine, or suggest any entity that is not explicitly present in the paths.
 
 Your task is to extract answers from the provided Candidate Reasoning Paths that correctly answer the question.
 
 VERIFICATION PROCESS:
-1. Read the Question and identify what type of entity is being asked for.
+1. Read the Question and identify what TYPE of entity is being asked for (person, place, language, time, etc.).
 2. For EACH candidate path, examine:
-   a) Does the FINAL relation in the path match what the question asks?
-   b) Does the FINAL entity (end of path) answer the question?
+   a) Which entity in the path matches the TYPE the question asks for?
+   b) Is there a relation that semantically connects to what the question asks?
    c) Is the reasoning chain logically valid?
 3. ONLY include answers where the path logically supports the answer.
 
 VALIDITY CRITERIA:
-- The final relation must be semantically relevant to the question.
-- Example: For "who is X's brother", the path should end with a sibling/brother relation.
-- Example: For "where was X born", the path should end with a birthplace relation.
+- The answer entity must be the TYPE of thing the question asks for.
+- The relation leading to the answer must be semantically relevant to the question.
 
 OUTPUT RULES:
-- ONLY output entities that appear at the END of a candidate path.
+- Output the entity that SEMANTICALLY answers the question based on its type.
+- The answer is the entity reached via a relation relevant to the question.
 - Do NOT output the starting entity unless it genuinely answers the question.
 - Do NOT hallucinate or infer entities not present in the paths.
 - If NO path validly answers the question, output: "# Answer: NONE, #Reasoning Path: No valid path found"
-- For multi-answer questions (e.g., "list all..."), include ALL valid distinct end entities.
+- For multi-answer questions, include ALL valid distinct answer entities.
 
 Output format (one line per answer):
-# Answer: [Exact Entity Name from Path End], #Reasoning Path: [Full Path String]"""
+# Answer: [Entity Name], #Reasoning Path: [Full Path String]"""
 
 
 AGGREGATOR_USER_PROMPT_TEMPLATE = """Question:
@@ -127,12 +127,12 @@ Candidate Reasoning Paths (ranked by confidence):
 {candidate_paths}
 
 INSTRUCTIONS:
-1. Examine each path above. The FINAL entity in each path is a potential answer.
-2. Select paths where the final relation semantically matches the question.
-3. Output ONLY entities that appear at the END of valid paths.
+1. Examine each path above and identify the entity that answers the question.
+2. The answer is the entity whose TYPE matches what the question asks for.
+3. Select paths where the relation semantically matches the question.
 
 Output format (no other text):
-# Answer: [entity from path end], #Reasoning Path: [full path string]"""
+# Answer: [entity name], #Reasoning Path: [full path string]"""
 
 
 # =============================================================================

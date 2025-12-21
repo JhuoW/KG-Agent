@@ -1,2 +1,24 @@
-"prediction": ["# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican Creole English Language\n# Answer:\nJamaican Creole English Language", "# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican English\n# Answer:\nJamaican English", "# Reasoning Path:\nJamaica -> location.country.form_of_government -> Parliamentary system -> government.form_of_government.countries -> Belize\n# Answer:\nBelize", "# Reasoning Path:\nJamaica -> location.country.form_of_government -> Parliamentary system -> government.form_of_government.countries -> Bahamas\n# Answer:\nBahamas", "# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican Creole English Language\n# Answer:\nJamaian Creole English Language", "# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican Creole English Language\n# Answer:\nJamaicanCreole English Language", "# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican Creole English Language\n# Answer:\nJamaican CreoleEnglish Language", "# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican English\n# Answer:\nEnglish Language\n# Answer:\nEnglish Language", "# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican Creole English Language\n# Answer:\n Jamaican Creole English Language", "# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican English\n# Answer:\nEnglish Language\n# Jamaican English\nJamaican English"]
+"prediction": 
+["# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican Creole English Language\n# Answer:\nJamaican Creole English Language", 
+"# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican English\n# Answer:\nJamaican English", 
+"# Reasoning Path:\nJamaica -> location.country.form_of_government -> Parliamentary system -> government.form_of_government.countries -> Belize\n# Answer:\nBelize", 
+"# Reasoning Path:\nJamaica -> location.country.form_of_government -> Parliamentary system -> government.form_of_government.countries -> Bahamas\n# Answer:\nBahamas", 
+"# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican Creole English Language\n# Answer:\nJamaian Creole English Language", 
+"# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican Creole English Language\n# Answer:\nJamaicanCreole English Language", 
+"# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican Creole English Language\n# Answer:\nJamaican CreoleEnglish Language", 
+"# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican English\n# Answer:\nEnglish Language\n# Answer:\nEnglish Language", 
+"# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican Creole English Language\n# Answer:\n Jamaican Creole English Language", 
+"# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican English\n# Answer:\nEnglish Language\n# Jamaican English\nJamaican English"]
 
+"prediction": 
+["# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican Creole English Language -> language.human_language.main_country -> Jamaica\n# Answer:\nJamaica", 
+"# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican Creole English Language -> language.human_language.countries_spoken_in -> Jamaica\n# Answer:\nJamaica", 
+"# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican English -> language.human_language.countries_spoken_in -> Jamaica\n# Answer:\nJamaica", 
+"# Reasoning Path:\nJamaica -> location.country.official_language -> Jamaican English -> language.human_language.countries_spoken_in -> Jamaica\n# Answer:\nJamaica"], 
+
+
+"prediction": 
+["# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican Creole English Language -> language.human_language.main_country -> Jamaica\n# Answer:\nJamaica", 
+"# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican Creole English Language -> language.human_language.countries_spoken_in -> Jamaica\n# Answer:\nJamaica", 
+"# Reasoning Path:\nJamaica -> location.country.languages_spoken -> Jamaican English -> language.human_language.countries_spoken_in -> Jamaica\n# Answer:\nJamaica", 
+"# Reasoning Path:\nJamaica -> location.country.official_language -> Jamaican English -> language.human_language.countries_spoken_in -> Jamaica\n# Answer:\nJamaica"], 

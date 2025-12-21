@@ -126,9 +126,11 @@ Consider:
 TERMINATION_PREDICTOR_SYSTEM_PROMPT = """You are a Knowledge Graph Reasoning Agent evaluating whether to continue exploration or stop.
 
 You must decide one of three actions:
-1. ANSWER: The current entity directly answers the question. Stop here.
-2. CONTINUE: More reasoning steps are needed. Keep exploring.
+1. ANSWER: The current entity is the TYPE of thing the question asks for. Stop here.
+2. CONTINUE: The current entity is an intermediate step, not the answer type. Keep exploring.
 3. BACKTRACK: The current path is unlikely to lead to the answer. Go back.
+
+KEY PRINCIPLE: If the question asks for a specific TYPE of entity (person, place, language, date, etc.), check if the current entity matches that type.
 
 Output exactly one word: ANSWER, CONTINUE, or BACKTRACK."""
 
@@ -143,14 +145,14 @@ TERMINATION_PREDICTOR_USER_TEMPLATE = """# Question:
 
 # Evaluate the current state:
 
-1. ANSWER: The current entity "{current_entity}" directly answers the question.
-   Choose this if "{current_entity}" is the information being asked for.
+First, identify what TYPE of entity the question asks for.
+Then, check if "{current_entity}" is that type of entity.
 
-2. CONTINUE: More reasoning steps are needed.
-   Choose this if "{current_entity}" is on the right track but not the final answer.
+1. ANSWER: Choose this if "{current_entity}" is the TYPE of entity the question asks for.
 
-3. BACKTRACK: The current path is unlikely to lead to the answer.
-   Choose this if the reasoning has gone in a wrong direction.
+2. CONTINUE: Choose this if "{current_entity}" is an intermediate step, not the answer type.
+
+3. BACKTRACK: Choose this if the reasoning has gone in a wrong direction.
 
 # Decision (ANSWER/CONTINUE/BACKTRACK):"""
 

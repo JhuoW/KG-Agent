@@ -22,6 +22,7 @@ DTYPE=bf16
 
 # Model path (same as GCR)
 MODEL_PATH=rmanluo/GCR-Meta-Llama-3.1-8B-Instruct
+# MODEL_PATH=save_models/FT-Qwen3-8B
 MODEL_NAME=$(basename "$MODEL_PATH")
 
 # GPU configuration
