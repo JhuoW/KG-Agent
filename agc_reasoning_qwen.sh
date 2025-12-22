@@ -1,11 +1,13 @@
 #!/bin/bash
-# AGC-Agent Reasoning Script
-# Aligned with GCR (AA_Trie_Reasoning/reasoning_trie_multigpu.sh) settings
+# AGC-Agent Reasoning Script for Qwen3-8B
 #
-# Usage: bash agc_reasoning.sh
+# This script runs the AGC-Agent with Qwen3-8B as the backbone LLM
+# instead of the GCR-finetuned Llama model.
+#
+# Usage: bash agc_reasoning_qwen.sh
 #
 # To use multiple GPUs, set GPU_ID environment variable:
-#   GPU_ID="0,1,2" bash agc_reasoning.sh
+#   GPU_ID="0,1,2" bash agc_reasoning_qwen.sh
 
 DATA_PATH=rmanluo
 DATA_LIST="RoG-webqsp"
@@ -20,17 +22,15 @@ ATTN_IMP=sdpa
 
 DTYPE=bf16
 
-# Model path (same as GCR)
-MODEL_PATH=rmanluo/GCR-Meta-Llama-3.1-8B-Instruct   # must be run under `llama3-1-8B` conda environment
-# MODEL_PATH=save_models/FT-Qwen3-8B
+# Qwen3-8B Model path
+MODEL_PATH=Qwen/Qwen3-8B
 MODEL_NAME=$(basename "$MODEL_PATH")
 
-# GPU configuration
-# Single GPU: GPU_ID="0"
-# Multi-GPU: GPU_ID="0,1,2"
-GPU_ID="${GPU_ID:-0,1,2}"
 
-# K: Number of paths to generate (same as GCR)
+# GPU_ID="${GPU_ID:-0,1,2}"
+GPU_ID="${GPU_ID:-1,2}"
+
+# K: Number of paths to generate
 K="10"
 
 # AGC-Agent specific settings
@@ -38,9 +38,17 @@ BEAM_WIDTH=10
 RELATION_TOP_K=3
 ENTITY_TOP_K=3
 
+# Quantization (optional, for memory efficiency)
+# QUANT="none"    # Full precision
+# QUANT="4bit"    # 4-bit quantization
+# QUANT="8bit"    # 8-bit quantization
+QUANT="${QUANT:-none}"
+
 for DATA in ${DATA_LIST}; do
   for k in $K; do
-    python agc_reasoning.py \
+    echo "Running Qwen3-8B AGC-Agent on ${DATA} with k=${k}..."
+
+    python agc_reasoning_qwen.py \
       --data_path ${DATA_PATH} \
       --d ${DATA} \
       --split ${SPLIT} \
@@ -54,6 +62,9 @@ for DATA in ${DATA_LIST}; do
       --generation_mode beam \
       --attn_implementation ${ATTN_IMP} \
       --dtype ${DTYPE} \
+      --quant ${QUANT} \
       --gpu_id ${GPU_ID}
   done
 done
+
+echo "Qwen3-8B AGC-Agent reasoning completed!"
