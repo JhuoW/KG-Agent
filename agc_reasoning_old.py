@@ -6,17 +6,18 @@ It follows the same structure as the reference implementation (reasoning_trie_mu
 but replaces the static KG-Trie with dynamic step-wise constraints.
 
 Results
-Accuracy: 69.22403010959586 
-Hit: 85.0 
-F1: 37.32395677587441 
-Precision: 37.74285714285714 
-Recall: 49.425525984854794 
-Path F1: 39.6509475613673 
-Path Precision: 38.00119047619047 
-Path Recall: 62.586086194430884 
-Path Answer F1: 46.08116585449106 
-Path Answer Precision: 45.90119047619048 
-Path Answer Recall: 69.25180788737363
+Accuracy: 52.546817564287274 
+Hit: 67.0 
+F1: 27.488533014943883 
+Precision: 26.28730158730159 
+Recall: 38.68080498165252 
+Path F1: 28.452649044702124 
+Path Precision: 28.012301587301586 
+Path Recall: 45.22714208891037 
+Path Answer F1: 33.58426122339547 
+Path Answer Precision: 33.012301587301586 
+Path Answer Recall: 52.57459534206505
+
 
 Usage:
     # Single GPU
@@ -51,13 +52,7 @@ class AGCReasoningModel:
     """Wrapper for the KG-specialized LLM used in AGC-Agent."""
 
     DTYPE = {"fp32": torch.float32, "fp16": torch.float16, "bf16": torch.bfloat16}
-
-    # Special tokens used by AGC-Agent (matching agentic_controller.py)
-    # - <REL>, </REL>: for relation selection
-    # - <ENT>, </ENT>: for entity selection
-    # - <PATH>, </PATH>: for path formatting
-    SPECIAL_TOKENS = ["<REL>", "</REL>", "<ENT>", "</ENT>", "<PATH>", "</PATH>"]
-    print("SPECIAL_TOKENS:", SPECIAL_TOKENS)
+    print("NO SPECIAL_TOKENS")
     @staticmethod
     def add_args(parser):
         """Add model-related arguments."""
@@ -73,7 +68,7 @@ class AGCReasoningModel:
         parser.add_argument("--quant", choices=["none", "4bit", "8bit"],
                           default="none")
         parser.add_argument("--attn_implementation",
-                          default="sdpa",
+                          default="flash_attention_2",
                           choices=["eager", "sdpa", "flash_attention_2"])
 
     def __init__(self, args):
@@ -107,19 +102,8 @@ class AGCReasoningModel:
             quantization_config=quantization_config
         ).cuda()
 
-        # Add special tokens if not already present (finetuned models will have them)
-        existing_special = self.tokenizer.additional_special_tokens or []
-        tokens_to_add = [t for t in self.SPECIAL_TOKENS if t not in existing_special]
-
-        if tokens_to_add:
-            special_tokens_dict = {'additional_special_tokens': self.SPECIAL_TOKENS}
-            num_added = self.tokenizer.add_special_tokens(special_tokens_dict)
-            if num_added > 0:
-                self.model.resize_token_embeddings(len(self.tokenizer))
-                print(f"Added {num_added} special tokens: {tokens_to_add}")
-
         self.model.eval()
-        print(f"Model loaded successfully. Vocab size: {len(self.tokenizer)}")
+        print("Model loaded successfully.")
 
 
 def process_sample(
@@ -509,7 +493,7 @@ if __name__ == "__main__":
                        help="Dataset name")
     parser.add_argument('--split', type=str, default='test[:100]',
                        help="Dataset split")
-    parser.add_argument('--predict_path', type=str, default='results/AGC-Agent',
+    parser.add_argument('--predict_path', type=str, default='results/AGC-Agent-old',
                        help="Output directory")
 
     # Model arguments
