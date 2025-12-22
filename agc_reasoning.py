@@ -6,18 +6,16 @@ It follows the same structure as the reference implementation (reasoning_trie_mu
 but replaces the static KG-Trie with dynamic step-wise constraints.
 
 Results
-Accuracy: 69.22403010959586 
-Hit: 85.0 
-F1: 37.32395677587441 
-Precision: 37.74285714285714 
-Recall: 49.425525984854794 
-Path F1: 39.6509475613673 
-Path Precision: 38.00119047619047 
-Path Recall: 62.586086194430884 
-Path Answer F1: 46.08116585449106 
-Path Answer Precision: 45.90119047619048 
-Path Answer Recall: 69.25180788737363
-
+Accuracy: 69.78301646883762 
+Hit: 85.0 F1: 38.273705717951074 
+Precision: 39.31428571428572 
+Recall: 49.52940182636921 
+Path F1: 40.84799232178003 
+Path Precision: 39.47261904761905 
+Path Recall: 63.12744870031244 
+Path Answer F1: 47.57206142315771 
+Path Answer Precision: 47.97261904761905 
+Path Answer Recall: 69.81079424661539
 Usage:
     # Single GPU
     python agc_reasoning.py --gpu_id 0 --d RoG-webqsp --split test[:100]
