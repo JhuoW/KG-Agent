@@ -1,4 +1,11 @@
 #!/bin/bash
+# AGC-Agent Reasoning Script
+# Aligned with GCR (AA_Trie_Reasoning/reasoning_trie_multigpu.sh) settings
+#
+# Usage: bash agc_reasoning.sh
+#
+# To use multiple GPUs, set GPU_ID environment variable:
+#   GPU_ID="0,1,2" bash agc_reasoning.sh
 
 DATA_PATH=rmanluo
 DATA_LIST="RoG-webqsp"
@@ -9,6 +16,7 @@ SPLIT="test[:100]"
 # SPLIT="test"
 INDEX_LEN=2  # Same as GCR index_path_length
 
+# Attention implementation
 # ATTN_IMP=flash_attention_2
 ATTN_IMP=sdpa
 
@@ -27,8 +35,8 @@ GPU_ID="${GPU_ID:-0,1,2}"
 
 
 # K: Number of paths to generate (same as GCR)
+# K="10"
 K="10"
-# K="5"
 
 # ! DEFAULT AGC-Agent specific settings (prefect)
 BEAM_WIDTH=10
@@ -48,7 +56,7 @@ ENTITY_TOP_K=3
 
 for DATA in ${DATA_LIST}; do
   for k in $K; do
-    python agc_reasoning.py \
+    python agc_reasoning2.py \
       --data_path ${DATA_PATH} \
       --d ${DATA} \
       --split ${SPLIT} \
@@ -66,35 +74,16 @@ for DATA in ${DATA_LIST}; do
   done
 done
 
-# BEAM_WIDTH=10
-# RELATION_TOP_K=3
-# ENTITY_TOP_K=3
-# K="10"
-# Accuracy: 70.7878983726223 
+
+
+# Accuracy: 71.38065704763903 
 # Hit: 86.0 
-# F1: 37.92536737482513 
-# Precision: 39.26984126984127 
-# Recall: 49.58736932576286 
-# Path F1: 41.35579967004074 
-# Path Precision: 39.928174603174604 
-# Path Recall: 63.9929906914911 
-# Path Answer F1: 47.349954395381744 
-# Path Answer Precision: 47.6281746031746 
-# Path Answer Recall: 70.81567615040008
-
-
-# BEAM_WIDTH=10
-# RELATION_TOP_K=3
-# ENTITY_TOP_K=3
-# K="5"
-# Accuracy: 65.5196336605684 
-# Hit: 83.0 
-# F1: 42.08694654493297 
-# Precision: 48.0 
-# Recall: 46.46352065401031 
-# Path F1: 47.44475804115936 
-# Path Precision: 52.6 
-# Path Recall: 58.7159158965621 
-# Path Answer F1: 53.877683954282205 
-# Path Answer Precision: 58.8 
-# Path Answer Recall: 65.5196336605684
+# F1: 37.12387608570413 
+# Precision: 37.46984126984127 
+# Recall: 50.41822323887484 
+# Path F1: 40.31173107786974 
+# Path Precision: 38.7281746031746 
+# Path Recall: 63.51793798624214 
+# Path Answer F1: 46.235640608590344 
+# Path Answer Precision: 45.6281746031746 
+# Path Answer Recall: 71.40843482541682
