@@ -11,10 +11,11 @@ DATA_PATH=rmanluo
 DATA_LIST="RoG-webqsp"
 # DATA_LIST="RoG-cwq"
 # DATA_LIST="RoG-webqsp RoG-cwq"
-. 
+
 SPLIT="test[:100]"
 # SPLIT="test"
-INDEX_LEN=2  # Same as GCR index_path_length
+# INDEX_LEN=2 
+INDEX_LEN=2
 
 # Attention implementation
 # ATTN_IMP=flash_attention_2
@@ -38,7 +39,7 @@ GPU_ID="${GPU_ID:-0,1,2}"
 # K="10"
 K="10"
 
-# ! DEFAULT AGC-Agent specific settings (prefect)
+# DEFAULT AGC-Agent specific settings (prefect)
 BEAM_WIDTH=10
 RELATION_TOP_K=3
 ENTITY_TOP_K=3
@@ -87,3 +88,19 @@ done
 # Path Answer F1: 46.235640608590344 
 # Path Answer Precision: 45.6281746031746 
 # Path Answer Recall: 71.40843482541682
+
+
+# Accuracy: 70.54862547055663 
+# Hit: 84.0 
+# F1: 37.86576877104352 
+# Precision: 38.4234126984127 
+# Recall: 50.38267959354276 
+# Path F1: 40.756643339714884 
+# Path Precision: 39.38174603174603 
+# Path Recall: 62.74546614135651 
+# Path Answer F1: 47.20880828159156 
+# Path Answer Precision: 46.58174603174602 
+# Path Answer Recall: 70.57640324833442
+
+
+
