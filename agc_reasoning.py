@@ -5,7 +5,7 @@ This script implements the main entry point for running AGC-Agent on KGQA datase
 It follows the same structure as the reference implementation (reasoning_trie_multigpu.py)
 but replaces the static KG-Trie with dynamic step-wise constraints.
 
-Results
+Results test[:100] on RoG-webqsp:
 Accuracy: 69.78301646883762 
 Hit: 85.0 F1: 38.273705717951074 
 Precision: 39.31428571428572 
@@ -16,6 +16,21 @@ Path Recall: 63.12744870031244
 Path Answer F1: 47.57206142315771 
 Path Answer Precision: 47.97261904761905 
 Path Answer Recall: 69.81079424661539
+
+Results test on RoG-webqsp:
+Accuracy: 70.72316205856222 
+Hit: 87.03931203931204 
+F1: 36.355867342537806 
+Precision: 37.56300943800944 
+Recall: 47.28463606734739 
+Path F1: 41.12840105011973 
+Path Precision: 41.453799578799575 
+Path Recall: 60.461510053599554 
+Path Answer F1: 47.625744280603314 
+Path Answer Precision: 47.023248898248895 
+Path Answer Recall: 70.78799962339978
+
+
 Usage:
     # Single GPU
     python agc_reasoning.py --gpu_id 0 --d RoG-webqsp --split test[:100]
@@ -36,7 +51,7 @@ import torch
 from tqdm import tqdm
 from datasets import load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
-
+import datetime
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -267,7 +282,7 @@ def main_multigpu(args, model_class):
 
     # Setup output directory (aligned with GCR naming)
     max_depth = args.index_path_length if args.index_path_length else args.max_depth
-    post_fix = f"agc-agent-{args.generation_mode}-depth{max_depth}-k{args.k}"
+    post_fix = f"agc-agent-{args.generation_mode}-depth{max_depth}-k{args.k}-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
     if args.simplified:
         post_fix = "simplified-" + post_fix
 
@@ -402,7 +417,7 @@ def main_single_gpu(args, model_class):
     """Main function for single GPU execution."""
     # Setup output directory (aligned with GCR naming)
     max_depth = args.index_path_length if args.index_path_length else args.max_depth
-    post_fix = f"agc-agent-{args.generation_mode}-depth{max_depth}-k{args.k}"
+    post_fix = f"agc-agent-{args.generation_mode}-depth{max_depth}-k{args.k}-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
     if args.simplified:
         post_fix = "simplified-" + post_fix
 

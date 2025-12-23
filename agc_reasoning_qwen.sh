@@ -27,8 +27,8 @@ MODEL_PATH=Qwen/Qwen3-8B
 MODEL_NAME=$(basename "$MODEL_PATH")
 
 
-# GPU_ID="${GPU_ID:-0,1,2}"
-GPU_ID="${GPU_ID:-1,2}"
+GPU_ID="${GPU_ID:-0,1,2}"
+# GPU_ID="${GPU_ID:-1,2}"
 
 # K: Number of paths to generate
 K="10"

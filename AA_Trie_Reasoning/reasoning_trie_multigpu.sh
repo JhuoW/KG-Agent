@@ -10,7 +10,8 @@ DATA_PATH=rmanluo
 # DATA_LIST="RoG-webqsp RoG-cwq"
 DATA_LIST="RoG-webqsp"
 
-SPLIT="test[:100]"
+# SPLIT="test[:100]"
+SPLIT="test"
 INDEX_LEN=2
 # ATTN_IMP=flash_attention_2
 ATTN_IMP=sdpa

@@ -8,10 +8,12 @@
 #   GPU_ID="0,1,2" bash agc_reasoning.sh
 
 DATA_PATH=rmanluo
-DATA_LIST="RoG-webqsp"
+# DATA_LIST="RoG-webqsp"
+DATA_LIST="RoG-cwq"
 # DATA_LIST="RoG-webqsp RoG-cwq"
 
-SPLIT="test[:100]"
+# SPLIT="test[:100]"
+SPLIT="test"
 INDEX_LEN=2  # Same as GCR index_path_length
 
 # Attention implementation
@@ -29,14 +31,22 @@ MODEL_NAME=$(basename "$MODEL_PATH")
 # Single GPU: GPU_ID="0"
 # Multi-GPU: GPU_ID="0,1,2"
 GPU_ID="${GPU_ID:-0,1,2}"
+# GPU_ID="${GPU_ID:-1,2}"
+
 
 # K: Number of paths to generate (same as GCR)
 K="10"
 
-# AGC-Agent specific settings
+# ! DEFAULT AGC-Agent specific settings (prefect)
 BEAM_WIDTH=10
 RELATION_TOP_K=3
 ENTITY_TOP_K=3
+
+# 55 acc 
+# BEAM_WIDTH=5
+# RELATION_TOP_K=3
+# ENTITY_TOP_K=1
+
 
 for DATA in ${DATA_LIST}; do
   for k in $K; do

@@ -95,7 +95,7 @@ class QwenReasoningModel:
         self.model = AutoModelForCausalLM.from_pretrained(
             self.args.model_path,
             trust_remote_code=True,
-            torch_dtype=self.DTYPE.get(self.args.dtype),
+            dtype=self.DTYPE.get(self.args.dtype),
             attn_implementation=self.args.attn_implementation,
             quantization_config=quantization_config
         ).cuda()
