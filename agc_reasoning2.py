@@ -25,7 +25,7 @@ import datetime
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from utils.gcr_utils import eval_path_result_w_ans, eval_path_answer, get_truth_paths
+from utils.gcr_utils import eval_path_result_w_ans, eval_path_answer, get_truth_paths, filter_invalid_answers
 from utils.utils import build_graph, path_to_string, load_jsonl
 from agc_agent2 import AGCAgent, AGCAgentConfig, SimplifiedAGCAgent
 
@@ -108,7 +108,8 @@ class AGCReasoningModel:
 def process_sample(
     data: dict,
     agent: AGCAgent,
-    undirected: bool = False
+    undirected: bool = False,
+    filter_mid: bool = False
 ) -> Optional[dict]:
     """
     Process a single sample with AGC-Agent.
@@ -117,6 +118,7 @@ def process_sample(
         data: Sample from dataset with 'question', 'answer', 'q_entity', 'graph'
         agent: The AGC-Agent instance
         undirected: Whether to treat graph as undirected
+        filter_mid: Whether to filter out Freebase MID answers
 
     Returns:
         Result dict or None if processing fails
@@ -150,6 +152,9 @@ def process_sample(
             topic_entities=q_entity
         )
 
+        # Filter out predictions with invalid Freebase MID answers (e.g., m.012zbkk5, g.125czvn3w)
+        valid_predictions = filter_invalid_answers(result.predictions)
+
         # Get ground truth paths
         g = build_graph(graph_triples, undirected)
         truth_paths = get_truth_paths(q_entity, a_entity, g)
@@ -158,7 +163,7 @@ def process_sample(
         return {
             "id": sample_id,
             "question": question,  # Use original question in output
-            "prediction": result.predictions,
+            "prediction": valid_predictions if filter_mid else result.predictions,  # Use filtered predictions (may have fewer than 10 paths)
             "ground_truth": answer,
             "ground_truth_paths": ground_paths,
             "reasoning_trace": result.reasoning_trace
@@ -227,7 +232,7 @@ def run_worker(args, model_class):
     # Process samples
     results = []
     for data in tqdm(dataset, desc=f"GPU {gpu_id}"):
-        result = process_sample(data, agent, args.undirected)
+        result = process_sample(data, agent, args.undirected, args.filter_mid)
         if result is not None:
             results.append(result)
             if args.debug:
@@ -330,6 +335,8 @@ def main_multigpu(args, model_class):
         base_cmd.append("--simplified")
     if not args.use_constrained_generation:
         base_cmd.append("--no_constrained_generation")
+    if args.filter_mid:
+        base_cmd.append("--filter_mid")
     if args.model_name:
         base_cmd.extend(["--model_name", args.model_name])
 
@@ -468,7 +475,7 @@ def main_single_gpu(args, model_class):
         if data['id'] in processed_ids:
             continue
 
-        result = process_sample(data, agent, args.undirected)
+        result = process_sample(data, agent, args.undirected, args.filter_mid)
         if result is not None:
             if args.debug:
                 print(json.dumps(result, indent=2))
@@ -534,6 +541,8 @@ if __name__ == "__main__":
                        help="Use simplified agent (single LLM call per step)")
     parser.add_argument('--no_constrained_generation', action='store_true',
                        help="Disable trie-constrained generation")
+    parser.add_argument('--filter_mid', action='store_true',
+                       help="Filter invalid Freebase MID answers")
 
     # Worker mode arguments
     parser.add_argument("--worker_mode", action="store_true")

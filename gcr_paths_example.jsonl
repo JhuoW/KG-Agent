@@ -217,3 +217,41 @@ AGC-Agent with special tokens
   "ground_truth": 
   ["Lightning rod", "Glass harmonica", "Bifocals", "Franklin stove"], 
   "ground_truth_paths": ["Benjamin Franklin -> law.inventor.inventions -> Lightning rod", "Benjamin Franklin -> law.inventor.inventions -> Glass harmonica", "Benjamin Franklin -> law.inventor.inventions -> Bifocals", "Benjamin Franklin -> law.inventor.inventions -> Franklin stove"], "reasoning_trace": {"total_paths_explored": 17, "completed_paths": 0, "max_depth_reached": 2, "backtrack_count": 0}}
+
+
+
+{"id": "WebQTest-51", "question": "who will play mr gray in the film", 
+"prediction": ["# Reasoning Path:\nChristian Grey -> film.film_character.portrayed_in_films -> m.0ydn3r2 -> film.performance.actor -> Jamie Dornan\n# Answer:\nm.0ydn3r2", 
+"# Reasoning Path:\nChristian Grey -> common.topic.notable_for -> g.125czvn3w\n# Answer:\ng.125czvn3w", 
+"# Reasoning Path:\nChristian Grey -> film.film_character.portrayed_in_films -> m.0ydn3r2 -> film.performance.film -> Fifty Shades of Grey\n# Answer:\nm.0ydn3r2", 
+"# Reasoning Path:\nChristian Grey -> fictional_universe.fictional_character.gender -> Male -> medicine.risk_factor.diseases -> Abdominal aortic aneurysm\n# Answer:\nMale", 
+"# Reasoning Path:\nChristian Grey -> fictional_universe.fictional_character.gender -> Male -> base.skosbase.vocabulary_equivalent_topic.equivalent_concept -> Males\n# Answer:\nMale", 
+"# Reasoning Path:\nChristian Grey -> fictional_universe.fictional_character.gender -> Male -> common.topic.notable_for -> g.1255p_jgc\n# Answer:\nMale", 
+"# Reasoning Path:\nChristian Grey -> fictional_universe.fictional_character.gender -> Male -> medicine.risk_factor.diseases -> Actinic keratosis\n# Answer:\nMale", 
+"# Reasoning Path:\nChristian Grey -> fictional_universe.fictional_character.gender -> Male -> medicine.risk_factor.diseases -> Acute myeloid leukemia\n# Answer:\nMale"], 
+"ground_truth": ["Jamie Dornan"], "ground_truth_paths": ["Christian Grey -> film.film_character.portrayed_in_films -> m.0ydn3r2 -> film.performance.actor -> Jamie Dornan"], "reasoning_trace": {"total_paths_explored": 8, "completed_paths": 1, "max_depth_reached": 2, "backtrack_count": 0}}
+
+
+
+{"id": "WebQTest-51", "question": "who will play mr gray in the film", "prediction": 
+["# Reasoning Path:\nChristian Grey -> fictional_universe.fictional_character.gender -> Male -> medicine.risk_factor.diseases -> Abdominal aortic aneurysm\n# Answer:\nMale", 
+"# Reasoning Path:\nChristian Grey -> fictional_universe.fictional_character.gender -> Male -> base.skosbase.vocabulary_equivalent_topic.equivalent_concept -> Males\n# Answer:\nMale", 
+"# Reasoning Path:\nChristian Grey -> fictional_universe.fictional_character.gender -> Male -> common.topic.notable_for -> g.1255p_jgc\n# Answer:\nMale", 
+"# Reasoning Path:\nChristian Grey -> fictional_universe.fictional_character.gender -> Male -> medicine.risk_factor.diseases -> Actinic keratosis\n# Answer:\nMale", 
+"# Reasoning Path:\nChristian Grey -> fictional_universe.fictional_character.gender -> Male -> medicine.risk_factor.diseases -> Acute myeloid leukemia\n# Answer:\nMale"], "ground_truth": ["Jamie Dornan"], "ground_truth_paths": ["Christian Grey -> film.film_character.portrayed_in_films -> m.0ydn3r2 -> film.performance.actor -> Jamie Dornan"], "reasoning_trace": {"total_paths_explored": 7, "completed_paths": 2, "max_depth_reached": 2, "backtrack_count": 0}}
+
+
+{"id": "WebQTest-105", 
+"question": "what language do people from thailand speak", 
+"prediction": [
+  "# Reasoning Path:\nThailand -> location.country.languages_spoken -> Vietnamese Language -> common.topic.notable_types -> Human Language\n# Answer:\nVietnamese Language", 
+  "# Reasoning Path:\nThailand -> location.country.languages_spoken -> Akha Language -> language.human_language.main_country -> Myanmar\n# Answer:\nAkha Language", 
+  "# Reasoning Path:\nThailand -> location.country.languages_spoken -> Vietnamese Language -> language.human_language.main_country -> Vietnam\n# Answer:\nVietnamese Language", 
+  "# Reasoning Path:\nThailand -> location.country.official_language -> Thai Language -> media_common.netflix_genre.titles -> Shutter\n# Answer:\nThai Language", 
+  "# Reasoning Path:\nThailand -> location.country.languages_spoken -> Lao Language -> language.human_language.countries_spoken_in -> Laos\n# Answer:\nLao Language", 
+  "# Reasoning Path:\nThailand -> location.statistical_region.gross_savings_as_percent_of_gdp -> g.12tb6f6yg\n# Answer:\ng.12tb6f6yg", 
+  "# Reasoning Path:\nThailand -> location.country.languages_spoken -> Akha Language -> language.human_language.region -> Asia\n# Answer:\nAkha Language", 
+  "# Reasoning Path:\nThailand -> location.country.languages_spoken -> Lao Language -> language.human_language.region -> Asia\n# Answer:\nLao Language", 
+  "# Reasoning Path:\nThailand -> location.country.official_language -> Thai Language -> language.human_language.region -> Asia\n# Answer:\nThai Language", 
+  "# Reasoning Path:\nThailand -> location.country.languages_spoken -> Lao Language -> common.topic.notable_types -> Human Language\n# Answer:\nLao Language"], 
+  "ground_truth": ["Mon Language", "Saek language", "Akha Language", "Hmong language", "Nyaw Language", "Thai Language", "Cham language", "Mlabri Language", "Malay, Pattani Language", "Phu Thai language", "Khmer language", "Vietnamese Language", "Lao Language"], "ground_truth_paths": ["Thailand -> location.country.languages_spoken -> Mon Language", "Thailand -> location.country.languages_spoken -> Saek language", "Thailand -> location.country.languages_spoken -> Akha Language", "Thailand -> location.country.languages_spoken -> Hmong language", "Thailand -> location.country.languages_spoken -> Nyaw Language", "Thailand -> location.country.languages_spoken -> Thai Language", "Thailand -> location.country.languages_spoken -> Cham language", "Thailand -> location.country.languages_spoken -> Mlabri Language", "Thailand -> location.country.languages_spoken -> Malay, Pattani Language", "Thailand -> location.country.languages_spoken -> Phu Thai language", "Thailand -> location.country.languages_spoken -> Khmer language", "Thailand -> location.country.languages_spoken -> Vietnamese Language", "Thailand -> location.country.languages_spoken -> Lao Language"], "reasoning_trace": {"total_paths_explored": 13, "completed_paths": 3, "max_depth_reached": 2, "backtrack_count": 0}}

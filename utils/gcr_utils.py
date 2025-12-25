@@ -49,6 +49,67 @@ def normalize(s: str) -> str:
     return s
 
 
+def is_freebase_mid(s: str) -> bool:
+    """
+    Check if a string is a Freebase Machine ID (MID) or similar identifier.
+
+    Freebase and related KG identifiers typically follow patterns like:
+    - m.xxx (e.g., m.012zbkk5, m.04nb7z0) - Freebase Machine IDs
+    - g.xxx (e.g., g.125czvn3w) - Google Knowledge Graph IDs
+    - n.xxx - Named entity IDs
+    - /m/xxx - URI-style MIDs
+
+    Args:
+        s: The string to check
+
+    Returns:
+        True if the string appears to be a Freebase MID or similar ID, False otherwise
+    """
+    if not s:
+        return False
+    s = s.strip()
+
+    # Pattern 1: Single letter prefix followed by dot and alphanumeric (m.xxx, g.xxx, n.xxx, etc.)
+    if re.match(r'^[a-z]\.[0-9a-zA-Z_]+$', s):
+        return True
+
+    # Pattern 2: URI-style MIDs (/m/xxx, /g/xxx)
+    if re.match(r'^/[a-z]/[0-9a-zA-Z_]+$', s):
+        return True
+
+    return False
+
+
+def filter_invalid_answers(predictions: List[str]) -> List[str]:
+    """
+    Filter out reasoning paths that have invalid answers (Freebase MIDs).
+
+    Args:
+        predictions: List of prediction strings in format:
+            "# Reasoning Path:\n...\n# Answer:\n<answer>"
+
+    Returns:
+        List of predictions with valid (non-MID) answers
+    """
+    valid_predictions = []
+    for p in predictions:
+        # Extract answer from prediction
+        if "# Answer:\n" in p:
+            ans = p.split("# Answer:\n")[-1].strip()
+        elif "# Answer:" in p:
+            ans = p.split("# Answer:")[-1].strip()
+        else:
+            # Can't extract answer, keep the prediction
+            valid_predictions.append(p)
+            continue
+
+        # Check if answer is a Freebase MID - if NOT a MID, keep it
+        if not is_freebase_mid(ans):
+            valid_predictions.append(p)
+
+    return valid_predictions
+
+
 def match(s1: str, s2: str) -> bool:
     s1 = normalize(s1)
     s2 = normalize(s2)

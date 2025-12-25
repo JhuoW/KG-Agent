@@ -49,15 +49,17 @@ ENTITY_TOP_K=3
 # RELATION_TOP_K=3
 # ENTITY_TOP_K=1
 
-BEAM_WIDTH=9
-RELATION_TOP_K=3
-ENTITY_TOP_K=3
+# BEAM_WIDTH=9
+# RELATION_TOP_K=3
+# ENTITY_TOP_K=3
 
-
+# Filter Freebase MID answers: set to "true" to filter out invalid MID answers (m.xxx, g.xxx)
+FILTER_MID="${FILTER_MID:-false}"
 
 for DATA in ${DATA_LIST}; do
   for k in $K; do
-    python agc_reasoning2.py \
+    # Build command
+    CMD="python agc_reasoning2.py \
       --data_path ${DATA_PATH} \
       --d ${DATA} \
       --split ${SPLIT} \
@@ -71,7 +73,15 @@ for DATA in ${DATA_LIST}; do
       --generation_mode beam \
       --attn_implementation ${ATTN_IMP} \
       --dtype ${DTYPE} \
-      --gpu_id ${GPU_ID}
+      --gpu_id ${GPU_ID}"
+
+    # Add --filter_mid flag if enabled
+    if [ "${FILTER_MID}" = "true" ]; then
+      CMD="${CMD} --filter_mid"
+    fi
+
+    # Execute
+    eval ${CMD}
   done
 done
 
@@ -102,5 +112,18 @@ done
 # Path Answer Precision: 46.58174603174602 
 # Path Answer Recall: 70.57640324833442
 
+
+# Filter-mid=False
+# Accuracy: 70.79284342756736 
+# Hit: 85.0 
+# F1: 37.54908597486585 
+# Precision: 37.96984126984127 
+# Recall: 50.60818739658093 
+# Path F1: 40.63741512281303 
+# Path Precision: 39.12817460317461 
+# Path Recall: 63.99066525896942 
+# Path Answer F1: 46.69437833351049 
+# Path Answer Precision: 46.1281746031746 
+# Path Answer Recall: 70.82062120534513
 
 
