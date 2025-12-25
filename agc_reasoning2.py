@@ -25,7 +25,7 @@ import datetime
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from utils.gcr_utils import eval_path_result_w_ans, get_truth_paths
+from utils.gcr_utils import eval_path_result_w_ans, eval_path_answer, get_truth_paths
 from utils.utils import build_graph, path_to_string, load_jsonl
 from agc_agent2 import AGCAgent, AGCAgentConfig, SimplifiedAGCAgent
 
@@ -379,7 +379,8 @@ def main_multigpu(args, model_class):
 
     print(f"Merged {len(all_results)} results to {final_output}")
 
-    # Evaluate
+    # Evaluate with adaptive topk (top 3 for 1-2 answers, top K for K answers)
+    # eval_path_answer(final_output)
     eval_path_result_w_ans(final_output)
 
 
@@ -478,8 +479,8 @@ def main_single_gpu(args, model_class):
 
     fout.close()
 
-    # Evaluate
-    eval_path_result_w_ans(output_file)
+    # Evaluate with adaptive topk (top 3 for 1-2 answers, top K for K answers)
+    eval_path_answer(output_file)
 
 
 if __name__ == "__main__":

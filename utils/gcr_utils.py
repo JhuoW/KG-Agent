@@ -498,6 +498,135 @@ def eval_path_result(predict_file, cal_f1=True, topk=-1):
         f.write(result_str)
 
 
+def eval_path_answer(predict_file, cal_f1=True, min_topk=5):
+    """
+    Evaluate reasoning paths with adaptive topk based on number of ground truth answers.
+
+    For questions with 1-2 ground truth answers: use top min_topk (default 3) reasoning paths
+    For questions with K answers (K > 2): use top K reasoning paths
+
+    Args:
+        predict_file: Path to predictions.jsonl file
+        cal_f1: Whether to calculate F1 score
+        min_topk: Minimum number of paths to consider (default 3)
+    """
+    eval_name = "detailed_eval_result_adaptive.jsonl"
+    detailed_eval_file = predict_file.replace("predictions.jsonl", eval_name)
+
+    # Load results
+    acc_list = []
+    hit_list = []
+    f1_list = []
+    precission_list = []
+    recall_list = []
+    path_ans_f1_list = []
+    path_ans_precission_list = []
+    path_ans_recall_list = []
+    path_f1_list = []
+    path_precission_list = []
+    path_recall_list = []
+
+    with open(predict_file, "r") as f, open(detailed_eval_file, "w") as f2:
+        for line in f:
+            try:
+                data = json.loads(line)
+            except:
+                print(line)
+                continue
+            id = data["id"]
+            prediction = data["prediction"]  # 表示一个问题对应的10条推理路径
+            answer = list(set(data["ground_truth"]))  # 表示一个问题对应的ground-truth answers
+
+            if cal_f1:
+                # Adaptive topk: use top min_topk paths for 1-2 answers, top K paths for K answers (K > 2)
+                num_answers = len(answer)
+                effective_topk = min_topk if num_answers <= 2 else num_answers
+
+                prediction = extract_topk_prediction(prediction, effective_topk)
+
+                predicted_path = []
+                predicted_ans = []
+                for p in prediction:
+                    ans = p.split("# Answer:\n")[-1]
+                    path = p.split("# Answer:\n")[0].split("# Reasoning Path:\n")[-1]
+                    predicted_path.append(path.strip())
+                    predicted_ans.append(ans.strip())
+
+                f1_score, precision_score, recall_score = eval_f1(predicted_ans, answer)
+                path_ans_f1_score, path_ans_precision_score, path_ans_recall_score = eval_f1(predicted_path, answer)
+                path_ans_f1_list.append(path_ans_f1_score)
+                path_ans_precission_list.append(path_ans_precision_score)
+                path_ans_recall_list.append(path_ans_recall_score)
+                f1_list.append(f1_score)
+                precission_list.append(precision_score)
+                recall_list.append(recall_score)
+                prediction_str = " ".join(prediction)
+                acc = eval_acc(prediction_str, answer)
+                hit = eval_hit(prediction_str, answer)
+                acc_list.append(acc)
+                hit_list.append(hit)
+                path_f1_score, path_precision_score, path_recall_score = eval_f1(
+                    predicted_path, data["ground_truth_paths"]
+                )
+                path_f1_list.append(path_f1_score)
+                path_precission_list.append(path_precision_score)
+                path_recall_list.append(path_recall_score)
+                f2.write(
+                    json.dumps(
+                        {
+                            "id": id,
+                            "prediction": prediction,
+                            "ground_truth": answer,
+                            "effective_topk": effective_topk,
+                            "ans_acc": acc,
+                            "ans_hit": hit,
+                            "ans_f1": f1_score,
+                            "ans_precission": precision_score,
+                            "ans_recall": recall_score,
+                            "path_f1": path_f1_score,
+                            "path_precision": path_precision_score,
+                            "path_recall": path_recall_score,
+                            "path_ans_f1": path_ans_f1_score,
+                            "path_ans_precision": path_ans_precision_score,
+                            "path_ans_recall": path_ans_recall_score,
+                        }
+                    )
+                    + "\n"
+                )
+            else:
+                acc = eval_acc(prediction, answer)
+                hit = eval_hit(prediction, answer)
+                acc_list.append(acc)
+                hit_list.append(hit)
+                f2.write(
+                    json.dumps(
+                        {
+                            "id": id,
+                            "prediction": prediction,
+                            "ground_truth": answer,
+                            "acc": acc,
+                            "hit": hit,
+                        }
+                    )
+                    + "\n"
+                )
+
+    if len(f1_list) > 0:
+        result_str = f"Accuracy: {sum(acc_list) * 100 / len(acc_list)} Hit: {sum(hit_list) * 100 / len(hit_list)} F1: {sum(f1_list) * 100 / len(f1_list)} Precision: {sum(precission_list) * 100 / len(precission_list)} Recall: {sum(recall_list) * 100 / len(recall_list)} Path F1: {sum(path_f1_list) * 100 / len(path_f1_list)} Path Precision: {sum(path_precission_list) * 100 / len(path_precission_list)} Path Recall: {sum(path_recall_list) * 100 / len(path_recall_list)} Path Answer F1: {sum(path_ans_f1_list) * 100 / len(path_ans_f1_list)} Path Answer Precision: {sum(path_ans_precission_list) * 100 / len(path_ans_precission_list)} Path Answer Recall: {sum(path_ans_recall_list) * 100 / len(path_ans_recall_list)}"
+    else:
+        result_str = (
+            "Accuracy: "
+            + str(sum(acc_list) * 100 / len(acc_list))
+            + " Hit: "
+            + str(sum(hit_list) * 100 / len(hit_list))
+        )
+    print(result_str)
+    result_name = "eval_result_adaptive.txt"
+    eval_result_path = predict_file.replace("predictions.jsonl", result_name)
+    with open(eval_result_path, "w") as f:
+        f.write(result_str)
+
+
 def eval_path_result_w_ans(predict_file, cal_f1=True, topk=-1):
     # predict_file = os.path.join(result_path, 'predictions.jsonl')
     eval_name = (
