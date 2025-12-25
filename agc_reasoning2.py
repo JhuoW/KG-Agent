@@ -25,7 +25,7 @@ import datetime
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from utils.gcr_utils import eval_path_result_w_ans, eval_path_answer, get_truth_paths, filter_invalid_answers
+from utils.gcr_utils import eval_path_result_w_ans, eval_path_answer, get_truth_paths, filter_invalid_answers, replace_mid_answers_with_path_entity
 from utils.utils import build_graph, path_to_string, load_jsonl
 from agc_agent2 import AGCAgent, AGCAgentConfig, SimplifiedAGCAgent
 
@@ -152,8 +152,13 @@ def process_sample(
             topic_entities=q_entity
         )
 
-        # Filter out predictions with invalid Freebase MID answers (e.g., m.012zbkk5, g.125czvn3w)
-        valid_predictions = filter_invalid_answers(result.predictions)
+        # Handle invalid Freebase MID answers (e.g., m.012zbkk5, g.125czvn3w)
+        # Instead of filtering (which removes useful paths), replace MID answers
+        # with the last valid entity from the reasoning path
+        if filter_mid:
+            processed_predictions = replace_mid_answers_with_path_entity(result.predictions)
+        else:
+            processed_predictions = result.predictions
 
         # Get ground truth paths
         g = build_graph(graph_triples, undirected)
@@ -163,7 +168,7 @@ def process_sample(
         return {
             "id": sample_id,
             "question": question,  # Use original question in output
-            "prediction": valid_predictions if filter_mid else result.predictions,  # Use filtered predictions (may have fewer than 10 paths)
+            "prediction": processed_predictions,
             "ground_truth": answer,
             "ground_truth_paths": ground_paths,
             "reasoning_trace": result.reasoning_trace

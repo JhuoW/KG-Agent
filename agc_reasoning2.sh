@@ -54,7 +54,8 @@ ENTITY_TOP_K=3
 # ENTITY_TOP_K=3
 
 # Filter Freebase MID answers: set to "true" to filter out invalid MID answers (m.xxx, g.xxx)
-FILTER_MID="${FILTER_MID:-false}"
+# FILTER_MID="${FILTER_MID:-false}"
+FILTER_MID="${FILTER_MID:-true}"
 
 for DATA in ${DATA_LIST}; do
   for k in $K; do
@@ -127,3 +128,15 @@ done
 # Path Answer Recall: 70.82062120534513
 
 
+# FILTER_MID=True
+# Accuracy: 69.4811785406839 
+# Hit: 85.0 
+# F1: 43.42058277654262 
+# Precision: 43.2281746031746 
+# Recall: 67.87846706032408 
+# Path F1: 40.47588387485401 
+# Path Precision: 39.8281746031746 
+# Path Recall: 61.89906606868602 
+# Path Answer F1: 46.444646222313125 
+# Path Answer Precision: 46.6281746031746 
+# Path Answer Recall: 69.50895631846167

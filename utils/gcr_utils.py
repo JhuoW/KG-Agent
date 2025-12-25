@@ -84,6 +84,13 @@ def filter_invalid_answers(predictions: List[str]) -> List[str]:
     """
     Filter out reasoning paths that have invalid answers (Freebase MIDs).
 
+    NOTE: This function is DEPRECATED. Use filter_mid_from_answers instead.
+    
+    The problem with filtering entire predictions is that:
+    1. The reasoning path itself may contain valid answer entities
+    2. eval_acc/eval_hit use " ".join(prediction) which matches against paths too
+    3. Removing predictions reduces coverage even if paths were useful
+    
     Args:
         predictions: List of prediction strings in format:
             "# Reasoning Path:\n...\n# Answer:\n<answer>"
@@ -108,6 +115,62 @@ def filter_invalid_answers(predictions: List[str]) -> List[str]:
             valid_predictions.append(p)
 
     return valid_predictions
+
+
+def replace_mid_answers_with_path_entity(predictions: List[str]) -> List[str]:
+    """
+    Replace invalid MID answers with the last valid entity from the path.
+    
+    When the answer is a Freebase MID (e.g., m.04nb7z0), we try to extract
+    a meaningful entity from the reasoning path instead.
+    
+    Args:
+        predictions: List of prediction strings in format:
+            "# Reasoning Path:\n...\n# Answer:\n<answer>"
+    
+    Returns:
+        List of predictions with MID answers replaced by path entities
+    """
+    fixed_predictions = []
+    for p in predictions:
+        if "# Answer:\n" in p:
+            parts = p.split("# Answer:\n")
+            ans = parts[-1].strip()
+            path_part = parts[0]
+        elif "# Answer:" in p:
+            parts = p.split("# Answer:")
+            ans = parts[-1].strip()
+            path_part = parts[0]
+        else:
+            fixed_predictions.append(p)
+            continue
+        
+        # If answer is a valid entity, keep as is
+        if not is_freebase_mid(ans):
+            fixed_predictions.append(p)
+            continue
+        
+        # Try to extract last entity from path
+        # Path format: "# Reasoning Path:\nEntity1 -> rel1 -> Entity2 -> rel2 -> Entity3"
+        if "# Reasoning Path:\n" in path_part:
+            path_str = path_part.split("# Reasoning Path:\n")[-1].strip()
+        else:
+            path_str = path_part.strip()
+        
+        # Split by " -> " and get entities (odd indices are entities in: E -> R -> E -> R -> E)
+        path_elements = [x.strip() for x in path_str.split(" -> ")]
+        
+        # Find the last non-MID entity in the path
+        new_ans = ans  # default to original
+        for elem in reversed(path_elements):
+            if elem and not is_freebase_mid(elem):
+                new_ans = elem
+                break
+        
+        # Reconstruct prediction with new answer
+        fixed_predictions.append(f"{path_part}# Answer:\n{new_ans}")
+    
+    return fixed_predictions
 
 
 def match(s1: str, s2: str) -> bool:
