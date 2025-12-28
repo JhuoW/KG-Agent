@@ -117,20 +117,43 @@ def filter_invalid_answers(predictions: List[str]) -> List[str]:
     return valid_predictions
 
 
-def replace_mid_answers_with_path_entity(predictions: List[str]) -> List[str]:
+def replace_mid_answers_with_path_entity(predictions: List[str], topic_entities: List[str] = None) -> List[str]:
     """
-    Replace invalid MID answers with the last valid entity from the path.
+    Replace invalid MID answers with a valid entity.
     
-    When the answer is a Freebase MID (e.g., m.04nb7z0), we try to extract
-    a meaningful entity from the reasoning path instead.
+    Strategy:
+    1. First try to use the last valid (non-MID, non-topic) entity from the path
+    2. If no valid entity in path, use the answer from the first (highest-scored) prediction
     
     Args:
         predictions: List of prediction strings in format:
             "# Reasoning Path:\n...\n# Answer:\n<answer>"
+        topic_entities: List of topic entities to exclude (question entities)
     
     Returns:
-        List of predictions with MID answers replaced by path entities
+        List of predictions with MID answers replaced
     """
+    if not predictions:
+        return predictions
+    
+    topic_set = set(topic_entities) if topic_entities else set()
+    
+    # First pass: extract the best valid answer from first prediction (fallback)
+    fallback_answer = None
+    for p in predictions:
+        if "# Answer:\n" in p:
+            ans = p.split("# Answer:\n")[-1].strip()
+        elif "# Answer:" in p:
+            ans = p.split("# Answer:")[-1].strip()
+        else:
+            continue
+        
+        # Use first non-MID answer as fallback
+        if not is_freebase_mid(ans) and ans not in topic_set:
+            fallback_answer = ans
+            break
+    
+    # Second pass: fix predictions with MID answers
     fixed_predictions = []
     for p in predictions:
         if "# Answer:\n" in p:
@@ -145,27 +168,30 @@ def replace_mid_answers_with_path_entity(predictions: List[str]) -> List[str]:
             fixed_predictions.append(p)
             continue
         
-        # If answer is a valid entity, keep as is
-        if not is_freebase_mid(ans):
+        # If answer is valid and not a topic entity, keep as is
+        if not is_freebase_mid(ans) and ans not in topic_set:
             fixed_predictions.append(p)
             continue
         
-        # Try to extract last entity from path
-        # Path format: "# Reasoning Path:\nEntity1 -> rel1 -> Entity2 -> rel2 -> Entity3"
+        # Try to extract last valid entity from path
         if "# Reasoning Path:\n" in path_part:
             path_str = path_part.split("# Reasoning Path:\n")[-1].strip()
         else:
             path_str = path_part.strip()
         
-        # Split by " -> " and get entities (odd indices are entities in: E -> R -> E -> R -> E)
+        # Split by " -> " and find last valid entity
         path_elements = [x.strip() for x in path_str.split(" -> ")]
         
-        # Find the last non-MID entity in the path
-        new_ans = ans  # default to original
+        new_ans = None
         for elem in reversed(path_elements):
-            if elem and not is_freebase_mid(elem):
+            # Skip if: empty, is MID, or is a topic entity
+            if elem and not is_freebase_mid(elem) and elem not in topic_set:
                 new_ans = elem
                 break
+        
+        # If no valid entity in path, use fallback from first prediction
+        if new_ans is None:
+            new_ans = fallback_answer if fallback_answer else ans
         
         # Reconstruct prediction with new answer
         fixed_predictions.append(f"{path_part}# Answer:\n{new_ans}")

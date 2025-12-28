@@ -154,9 +154,11 @@ def process_sample(
 
         # Handle invalid Freebase MID answers (e.g., m.012zbkk5, g.125czvn3w)
         # Instead of filtering (which removes useful paths), replace MID answers
-        # with the last valid entity from the reasoning path
+        # with the last valid entity from the reasoning path, or use the best prediction's answer
         if filter_mid:
-            processed_predictions = replace_mid_answers_with_path_entity(result.predictions)
+            processed_predictions = replace_mid_answers_with_path_entity(
+                result.predictions, topic_entities=q_entity
+            )
         else:
             processed_predictions = result.predictions
 

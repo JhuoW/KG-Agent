@@ -8,12 +8,12 @@
 #   GPU_ID="0,1,2" bash agc_reasoning.sh
 
 DATA_PATH=rmanluo
-DATA_LIST="RoG-webqsp"
-# DATA_LIST="RoG-cwq"
+# DATA_LIST="RoG-webqsp"
+DATA_LIST="RoG-cwq"
 # DATA_LIST="RoG-webqsp RoG-cwq"
 
-SPLIT="test[:100]"
-# SPLIT="test"
+# SPLIT="test[:100]"
+SPLIT="test"
 # INDEX_LEN=2 
 INDEX_LEN=2
 
@@ -140,3 +140,16 @@ done
 # Path Answer F1: 46.444646222313125 
 # Path Answer Precision: 46.6281746031746 
 # Path Answer Recall: 69.50895631846167
+
+
+# Accuracy: 71.16383969980858 
+# Hit: 86.0 
+# F1: 43.43734347194172 
+# Precision: 41.3281746031746 
+# Recall: 69.534376406445 
+# Path F1: 39.83591415120251 
+# Path Precision: 38.428174603174604 
+# Path Recall: 62.369309841516 
+# Path Answer F1: 46.01096202888759 
+# Path Answer Precision: 44.7281746031746 
+# Path Answer Recall: 71.19161747758636
