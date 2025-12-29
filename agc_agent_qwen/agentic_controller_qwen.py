@@ -307,18 +307,35 @@ class QwenRelationSelector:
                 add_generation_prompt=True
             )
 
+    def _clean_qwen_output(self, output: str) -> str:
+        """Remove Qwen3 thinking blocks and clean the output."""
+        # Remove <think>...</think> blocks if present
+        output = re.sub(r'<think>.*?</think>', '', output, flags=re.DOTALL | re.IGNORECASE)
+        # Remove any remaining thinking-related tokens
+        output = re.sub(r'<\|im_start\|>think.*?<\|im_end\|>', '', output, flags=re.DOTALL)
+        return output.strip()
+
     def _parse_relation(self, output: str, valid_relations: List[str]) -> Optional[str]:
         """Parse the selected relation from LLM output."""
+        # Clean Qwen3-specific tokens first
+        output = self._clean_qwen_output(output)
+
         # Try to extract from <REL>...</REL> tags
         match = re.search(r'<REL>\s*([^<]+?)\s*</REL>', output, re.IGNORECASE)
         if match:
             relation = match.group(1).strip()
             if relation in valid_relations:
                 return relation
+            # Try case-insensitive match
+            for rel in valid_relations:
+                if rel.lower() == relation.lower():
+                    return rel
 
         # Fallback: check if any valid relation appears in output
+        # Sort by length (longest first) to match most specific relation
+        sorted_relations = sorted(valid_relations, key=len, reverse=True)
         output_lower = output.lower()
-        for rel in valid_relations:
+        for rel in sorted_relations:
             if rel.lower() in output_lower:
                 return rel
 
@@ -378,7 +395,7 @@ class QwenRelationSelector:
         gen_kwargs = {
             "input_ids": input_ids,
             "attention_mask": attention_mask,
-            "max_new_tokens": 1024,
+            "max_new_tokens": 64,  # Reduced from 1024 - relation names are short
             "prefix_allowed_tokens_fn": prefix_allowed_fn,
             "pad_token_id": self.tokenizer.pad_token_id or self.tokenizer.eos_token_id,
             "return_dict_in_generate": True,
@@ -517,15 +534,33 @@ class QwenEntitySelector:
                 add_generation_prompt=True
             )
 
+    def _clean_qwen_output(self, output: str) -> str:
+        """Remove Qwen3 thinking blocks and clean the output."""
+        # Remove <think>...</think> blocks if present
+        output = re.sub(r'<think>.*?</think>', '', output, flags=re.DOTALL | re.IGNORECASE)
+        # Remove any remaining thinking-related tokens
+        output = re.sub(r'<\|im_start\|>think.*?<\|im_end\|>', '', output, flags=re.DOTALL)
+        return output.strip()
+
     def _parse_entity(self, output: str, valid_entities: List[str]) -> Optional[str]:
+        # Clean Qwen3-specific tokens first
+        output = self._clean_qwen_output(output)
+
         match = re.search(r'<ENT>\s*([^<]+?)\s*</ENT>', output, re.IGNORECASE)
         if match:
             entity = match.group(1).strip()
             if entity in valid_entities:
                 return entity
+            # Try case-insensitive match
+            for ent in valid_entities:
+                if ent.lower() == entity.lower():
+                    return ent
 
+        # Fallback: check if any valid entity appears in output
+        # Sort by length (longest first) to match most specific entity
+        sorted_entities = sorted(valid_entities, key=len, reverse=True)
         output_lower = output.lower()
-        for ent in valid_entities:
+        for ent in sorted_entities:
             if ent.lower() in output_lower:
                 return ent
 
@@ -699,7 +734,17 @@ class QwenTerminationPredictor:
                 add_generation_prompt=True
             )
 
+    def _clean_qwen_output(self, output: str) -> str:
+        """Remove Qwen3 thinking blocks and clean the output."""
+        # Remove <think>...</think> blocks if present
+        output = re.sub(r'<think>.*?</think>', '', output, flags=re.DOTALL | re.IGNORECASE)
+        # Remove any remaining thinking-related tokens
+        output = re.sub(r'<\|im_start\|>think.*?<\|im_end\|>', '', output, flags=re.DOTALL)
+        return output.strip()
+
     def _parse_action(self, output: str) -> TerminationAction:
+        # Clean Qwen3-specific tokens first
+        output = self._clean_qwen_output(output)
         output_upper = output.upper().strip()
 
         if "ANSWER" in output_upper:
@@ -821,7 +866,8 @@ class QwenAgenticController:
         self,
         question: str,
         topic_entities: List[str],
-        beam: BeamState
+        beam: BeamState,
+        skip_termination_at_depth_zero: bool = True
     ) -> Tuple[TerminationResult, List[BeamState]]:
         """
         Perform one reasoning step.
@@ -830,12 +876,21 @@ class QwenAgenticController:
             question: The natural language question
             topic_entities: Topic entities from the question
             beam: Current beam state
+            skip_termination_at_depth_zero: Skip termination check at depth 0 (always continue)
 
         Returns:
             (termination_result, new_beams)
         """
-        # First, check termination
-        term_result = self.termination_predictor.predict(question, beam)
+        # At depth 0, skip termination check - always continue from starting entities
+        if skip_termination_at_depth_zero and beam.depth == 0:
+            term_result = TerminationResult(
+                action=TerminationAction.CONTINUE,
+                confidence=1.0,
+                raw_output="[Skipped at depth 0]"
+            )
+        else:
+            # Check termination via LLM
+            term_result = self.termination_predictor.predict(question, beam)
 
         if term_result.action == TerminationAction.ANSWER:
             if self.termination_predictor.should_answer(term_result):

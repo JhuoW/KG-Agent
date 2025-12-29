@@ -23,7 +23,13 @@ ATTN_IMP=sdpa
 DTYPE=bf16
 
 # Qwen3-8B Model path
-MODEL_PATH=Qwen/Qwen3-8B
+# Option 1: Use base Qwen3-8B (general-purpose, lower accuracy on KG tasks)
+# MODEL_PATH=Qwen/Qwen3-8B
+
+# Option 2: Use fine-tuned Qwen3-8B (recommended for better KG reasoning)
+# After running: bash GCR_FT/finetune_qwen.sh
+MODEL_PATH=save_models/FT-Qwen3-8B
+
 MODEL_NAME=$(basename "$MODEL_PATH")
 
 
@@ -44,11 +50,15 @@ ENTITY_TOP_K=3
 # QUANT="8bit"    # 8-bit quantization
 QUANT="${QUANT:-none}"
 
+# Filter Freebase MID answers: set to "true" to filter out invalid MID answers (m.xxx, g.xxx)
+FILTER_MID="${FILTER_MID:-true}"
+
 for DATA in ${DATA_LIST}; do
   for k in $K; do
     echo "Running Qwen3-8B AGC-Agent on ${DATA} with k=${k}..."
 
-    python agc_reasoning_qwen.py \
+    # Build command
+    CMD="python agc_reasoning_qwen.py \
       --data_path ${DATA_PATH} \
       --d ${DATA} \
       --split ${SPLIT} \
@@ -63,7 +73,15 @@ for DATA in ${DATA_LIST}; do
       --attn_implementation ${ATTN_IMP} \
       --dtype ${DTYPE} \
       --quant ${QUANT} \
-      --gpu_id ${GPU_ID}
+      --gpu_id ${GPU_ID}"
+
+    # Add --filter_mid flag if enabled
+    if [ "${FILTER_MID}" = "true" ]; then
+      CMD="${CMD} --filter_mid"
+    fi
+
+    # Execute
+    eval ${CMD}
   done
 done
 

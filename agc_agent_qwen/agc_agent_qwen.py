@@ -48,6 +48,9 @@ class QwenAGCAgentConfig:
     # Output parameters
     output_top_k: int = 10  # Number of paths to return (K in GCR)
 
+    # Performance optimization
+    skip_termination_at_depth_zero: bool = True  # Skip termination check at depth 0
+
 
 class QwenAGCAgent:
     """
@@ -150,7 +153,8 @@ class QwenAGCAgent:
 
                 # Perform one reasoning step
                 term_result, new_beams = self.controller.step(
-                    question, topic_entities, beam
+                    question, topic_entities, beam,
+                    skip_termination_at_depth_zero=self.config.skip_termination_at_depth_zero
                 )
 
                 if term_result.action == TerminationAction.ANSWER:

@@ -1,0 +1,19 @@
+# Accelerate configuration for Qwen3-8B fine-tuning with multi-GPU (DDP)
+# Configured for 3x NVIDIA RTX PRO 6000 GPUs (~98GB each)
+# Use this for LoRA fine-tuning
+compute_environment: LOCAL_MACHINE
+debug: false
+distributed_type: MULTI_GPU
+downcast_bf16: 'no'
+gpu_ids: all
+machine_rank: 0
+main_training_function: main
+mixed_precision: bf16
+num_machines: 1
+num_processes: 3
+rdzv_backend: static
+same_network: true
+tpu_env: []
+tpu_use_cluster: false
+tpu_use_sudo: false
+use_cpu: false

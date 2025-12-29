@@ -33,7 +33,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from utils.gcr_utils import eval_path_result_w_ans, get_truth_paths
+from utils.gcr_utils import eval_path_result_w_ans, get_truth_paths, replace_mid_answers_with_path_entity
 from utils.utils import build_graph, path_to_string, load_jsonl
 from agc_agent_qwen import QwenAGCAgent, QwenAGCAgentConfig, QwenSimplifiedAGCAgent
 
@@ -70,12 +70,35 @@ class QwenReasoningModel:
         self.model = None
         self.tokenizer = None
 
-    def prepare_for_inference(self):
-        """Load Qwen3-8B model and tokenizer."""
-        print(f"Loading Qwen3-8B model from {self.args.model_path}...")
+    def _is_peft_adapter(self, model_path: str) -> bool:
+        """Check if model_path contains a PEFT adapter."""
+        adapter_config = Path(model_path) / "adapter_config.json"
+        return adapter_config.exists()
 
+    def _get_base_model_from_adapter(self, model_path: str) -> str:
+        """Extract base model path from adapter config."""
+        adapter_config = Path(model_path) / "adapter_config.json"
+        with open(adapter_config) as f:
+            config = json.load(f)
+        return config.get("base_model_name_or_path", "Qwen/Qwen3-8B")
+
+    def prepare_for_inference(self):
+        """Load Qwen3-8B model and tokenizer (with PEFT adapter support)."""
+        model_path = self.args.model_path
+        is_peft = self._is_peft_adapter(model_path)
+
+        if is_peft:
+            base_model_path = self._get_base_model_from_adapter(model_path)
+            print(f"Detected PEFT adapter at {model_path}")
+            print(f"Loading base model from {base_model_path}...")
+        else:
+            base_model_path = model_path
+            print(f"Loading Qwen3-8B model from {model_path}...")
+
+        # Load tokenizer from adapter path (has special tokens) or base model
+        tokenizer_path = model_path if is_peft else base_model_path
         self.tokenizer = AutoTokenizer.from_pretrained(
-            self.args.model_path,
+            tokenizer_path,
             trust_remote_code=True
         )
 
@@ -92,33 +115,36 @@ class QwenReasoningModel:
                 load_in_8bit=self.args.quant == "8bit",
             )
 
+        # Load base model
         self.model = AutoModelForCausalLM.from_pretrained(
-            self.args.model_path,
+            base_model_path,
             trust_remote_code=True,
-            dtype=self.DTYPE.get(self.args.dtype),
+            torch_dtype=self.DTYPE.get(self.args.dtype),
             attn_implementation=self.args.attn_implementation,
             quantization_config=quantization_config
         ).cuda()
 
-        # Add special tokens if not already present
-        existing_special = self.tokenizer.additional_special_tokens or []
-        tokens_to_add = [t for t in self.SPECIAL_TOKENS if t not in existing_special]
+        # Resize embeddings to match tokenizer (MUST happen BEFORE loading PEFT adapter)
+        if len(self.tokenizer) != self.model.config.vocab_size:
+            print(f"Resizing model embeddings from {self.model.config.vocab_size} to {len(self.tokenizer)}")
+            self.model.resize_token_embeddings(len(self.tokenizer))
 
-        if tokens_to_add:
-            special_tokens_dict = {'additional_special_tokens': self.SPECIAL_TOKENS}
-            num_added = self.tokenizer.add_special_tokens(special_tokens_dict)
-            if num_added > 0:
-                self.model.resize_token_embeddings(len(self.tokenizer))
-                print(f"Added {num_added} special tokens: {tokens_to_add}")
+        # Load PEFT adapter if present
+        if is_peft:
+            from peft import PeftModel
+            print(f"Loading PEFT adapter from {model_path}...")
+            self.model = PeftModel.from_pretrained(self.model, model_path)
+            print("PEFT adapter loaded successfully")
 
         self.model.eval()
-        print(f"Qwen3-8B model loaded successfully. Vocab size: {len(self.tokenizer)}")
+        print(f"Model loaded successfully. Vocab size: {len(self.tokenizer)}")
 
 
 def process_sample(
     data: dict,
     agent: QwenAGCAgent,
-    undirected: bool = False
+    undirected: bool = False,
+    filter_mid: bool = False
 ) -> Optional[dict]:
     """
     Process a single sample with Qwen3-8B AGC-Agent.
@@ -127,6 +153,7 @@ def process_sample(
         data: Sample from dataset with 'question', 'answer', 'q_entity', 'graph'
         agent: The Qwen3-8B AGC-Agent instance
         undirected: Whether to treat graph as undirected
+        filter_mid: Whether to filter out Freebase MID answers
 
     Returns:
         Result dict or None if processing fails
@@ -159,6 +186,16 @@ def process_sample(
             topic_entities=q_entity
         )
 
+        # Handle invalid Freebase MID answers (e.g., m.012zbkk5, g.125czvn3w)
+        # Instead of filtering (which removes useful paths), replace MID answers
+        # with the last valid entity from the reasoning path
+        if filter_mid:
+            processed_predictions = replace_mid_answers_with_path_entity(
+                result.predictions, topic_entities=q_entity
+            )
+        else:
+            processed_predictions = result.predictions
+
         # Get ground truth paths
         g = build_graph(graph_triples, undirected)
         truth_paths = get_truth_paths(q_entity, a_entity, g)
@@ -167,7 +204,7 @@ def process_sample(
         return {
             "id": sample_id,
             "question": question,
-            "prediction": result.predictions,
+            "prediction": processed_predictions,
             "ground_truth": answer,
             "ground_truth_paths": ground_paths,
             "reasoning_trace": result.reasoning_trace
@@ -237,7 +274,7 @@ def run_worker(args, model_class):
     # Process samples
     results = []
     for data in tqdm(dataset, desc=f"GPU {gpu_id} (Qwen3)"):
-        result = process_sample(data, agent, args.undirected)
+        result = process_sample(data, agent, args.undirected, args.filter_mid)
         if result is not None:
             results.append(result)
             if args.debug:
@@ -344,6 +381,8 @@ def main_multigpu(args, model_class):
         base_cmd.append("--simplified")
     if not args.use_constrained_generation:
         base_cmd.append("--no_constrained_generation")
+    if args.filter_mid:
+        base_cmd.append("--filter_mid")
     if args.model_name:
         base_cmd.extend(["--model_name", args.model_name])
     if args.quant != "none":
@@ -486,7 +525,7 @@ def main_single_gpu(args, model_class):
         if data['id'] in processed_ids:
             continue
 
-        result = process_sample(data, agent, args.undirected)
+        result = process_sample(data, agent, args.undirected, args.filter_mid)
         if result is not None:
             if args.debug:
                 print(json.dumps(result, indent=2))
@@ -552,6 +591,8 @@ if __name__ == "__main__":
                        help="Use simplified agent (single LLM call per step)")
     parser.add_argument('--no_constrained_generation', action='store_true',
                        help="Disable trie-constrained generation")
+    parser.add_argument('--filter_mid', action='store_true',
+                       help="Filter invalid Freebase MID answers")
 
     # Worker mode arguments
     parser.add_argument("--worker_mode", action="store_true")
