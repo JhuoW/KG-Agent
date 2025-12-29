@@ -276,7 +276,7 @@ class RelationSelector:
         gen_kwargs = {
             "input_ids": input_ids,
             "attention_mask": attention_mask,
-            "max_new_tokens": 1024,
+            "max_new_tokens": 64,  # Reduced from 1024 - relation names are short
             "prefix_allowed_tokens_fn": prefix_allowed_fn,
             "pad_token_id": self.tokenizer.eos_token_id,
             "return_dict_in_generate": True,
@@ -807,7 +807,8 @@ class AgenticController:
         self,
         question: str,
         topic_entities: List[str],
-        beam: BeamState
+        beam: BeamState,
+        skip_termination_at_depth_zero: bool = True
     ) -> Tuple[TerminationResult, List[BeamState]]:
         """
         Perform one reasoning step.
@@ -816,6 +817,7 @@ class AgenticController:
             question: The natural language question
             topic_entities: Topic entities from the question
             beam: Current beam state
+            skip_termination_at_depth_zero: Skip termination check at depth 0 (always continue)
 
         Returns:
             (termination_result, new_beams)
@@ -823,8 +825,16 @@ class AgenticController:
             - If CONTINUE: new_beams contains extended beams
             - If BACKTRACK: new_beams contains the backtracked beam (or empty)
         """
-        # First, check termination
-        term_result = self.termination_predictor.predict(question, beam)
+        # At depth 0, skip termination check - always continue from starting entities
+        if skip_termination_at_depth_zero and beam.depth == 0:
+            term_result = TerminationResult(
+                action=TerminationAction.CONTINUE,
+                confidence=1.0,
+                raw_output="[Skipped at depth 0]"
+            )
+        else:
+            # Check termination via LLM
+            term_result = self.termination_predictor.predict(question, beam)
 
         if term_result.action == TerminationAction.ANSWER:
             if self.termination_predictor.should_answer(term_result):

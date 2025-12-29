@@ -12,8 +12,8 @@ DATA_LIST="RoG-webqsp"
 # DATA_LIST="RoG-cwq"
 # DATA_LIST="RoG-webqsp RoG-cwq"
 
-SPLIT="test[:100]"
-# SPLIT="test"
+# SPLIT="test[:100]"
+SPLIT="test"
 # INDEX_LEN=2 
 INDEX_LEN=2
 
@@ -39,17 +39,29 @@ GPU_ID="${GPU_ID:-0,1,2}"
 # K="10"
 K="10"
 
-# DEFAULT AGC-Agent specific settings (prefect)
+# AGC-Agent Hyperparameter Settings
+# Speed test results on test[:50] samples:
+#   | Config           | BEAM | REL | ENT | Time  | Accuracy | Speedup |
+#   |------------------|------|-----|-----|-------|----------|---------|
+#   | baseline         | 10   | 3   | 3   | 1105s | 65.8%    | 1.0x    |
+#   | reduced_beam     | 8    | 3   | 3   | 1053s | 64.1%    | 1.05x   |
+#   | reduced_rel      | 10   | 2   | 3   | 842s  | 63.3%    | 1.31x   |
+#   | reduced_ent      | 10   | 3   | 2   | 922s  | 61.7%    | 1.20x   |
+#   | reduced_beam_rel | 8    | 2   | 3   | 726s  | 63.3%    | 1.52x   |
+#   | half_beam        | 5    | 3   | 3   | 571s  | 58.3%    | 1.94x   |
+
+# DEFAULT: Maximum accuracy settings
 BEAM_WIDTH=10
 RELATION_TOP_K=3
 ENTITY_TOP_K=3
 
-# 55 acc 
-# BEAM_WIDTH=5
-# RELATION_TOP_K=3
-# ENTITY_TOP_K=1
+# SPEED-OPTIMIZED: Best speed/accuracy trade-off (1.52x speedup, ~2.5% accuracy drop)
+# BEAM_WIDTH=8
+# RELATION_TOP_K=2
+# ENTITY_TOP_K=3
 
-# BEAM_WIDTH=9
+# FAST: Aggressive speed (1.94x speedup, ~7.5% accuracy drop)
+# BEAM_WIDTH=5
 # RELATION_TOP_K=3
 # ENTITY_TOP_K=3
 

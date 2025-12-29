@@ -219,7 +219,8 @@ def run_worker(args, model_class):
         answer_threshold=args.answer_threshold,
         use_constrained_generation=args.use_constrained_generation,
         generation_mode=args.generation_mode,  # beam, greedy, or sampling
-        output_top_k=args.k
+        output_top_k=args.k,
+        skip_termination_at_depth_zero=not args.no_skip_termination_depth0
     )
 
     # Create agent
@@ -442,7 +443,8 @@ def main_single_gpu(args, model_class):
         answer_threshold=args.answer_threshold,
         use_constrained_generation=args.use_constrained_generation,
         generation_mode=args.generation_mode,  # beam, greedy, or sampling
-        output_top_k=args.k
+        output_top_k=args.k,
+        skip_termination_at_depth_zero=not args.no_skip_termination_depth0
     )
 
     # Create agent
@@ -550,6 +552,8 @@ if __name__ == "__main__":
                        help="Disable trie-constrained generation")
     parser.add_argument('--filter_mid', action='store_true',
                        help="Filter invalid Freebase MID answers")
+    parser.add_argument('--no_skip_termination_depth0', action='store_true',
+                       help="Don't skip termination check at depth 0 (slower)")
 
     # Worker mode arguments
     parser.add_argument("--worker_mode", action="store_true")
