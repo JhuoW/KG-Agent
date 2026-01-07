@@ -1,8 +1,8 @@
 #!/bin/bash
-# AGC-Agent Reasoning Script for Qwen3-8B
+# AGC-Agent Reasoning Script for Qwen models
 #
-# This script runs the AGC-Agent with Qwen3-8B as the backbone LLM
-# instead of the GCR-finetuned Llama model.
+# This script runs the AGC-Agent with Qwen models (Qwen2.5-7B-Instruct, Qwen3-8B, etc.)
+# as the backbone LLM instead of the GCR-finetuned Llama model.
 #
 # Usage: bash agc_reasoning_qwen.sh
 #
@@ -22,13 +22,16 @@ ATTN_IMP=sdpa
 
 DTYPE=bf16
 
-# Qwen3-8B Model path
-# Option 1: Use base Qwen3-8B (general-purpose, lower accuracy on KG tasks)
+# Qwen Model path
+# Option 1: Use base Qwen2.5-7B-Instruct (recommended for structured reasoning)
+# MODEL_PATH=Qwen/Qwen2.5-7B-Instruct
+
+# Option 2: Use base Qwen3-8B
 # MODEL_PATH=Qwen/Qwen3-8B
 
-# Option 2: Use fine-tuned Qwen3-8B (recommended for better KG reasoning)
-# After running: bash GCR_FT/finetune_qwen.sh
-MODEL_PATH=save_models/FT-Qwen3-8B
+# Option 3: Use fine-tuned Qwen model (LoRA adapter)
+# After running: bash finetune_qwen.sh
+MODEL_PATH=save_models/GCR-Qwen2.5-7B-Instruct
 
 MODEL_NAME=$(basename "$MODEL_PATH")
 
@@ -44,6 +47,10 @@ BEAM_WIDTH=10
 RELATION_TOP_K=3
 ENTITY_TOP_K=3
 
+# Skip termination at all depths - force full exploration to max_depth
+# This prevents early BACKTRACK decisions that hurt base Qwen performance
+SKIP_ALL_TERMINATION=true
+
 # Quantization (optional, for memory efficiency)
 # QUANT="none"    # Full precision
 # QUANT="4bit"    # 4-bit quantization
@@ -55,7 +62,7 @@ FILTER_MID="${FILTER_MID:-true}"
 
 for DATA in ${DATA_LIST}; do
   for k in $K; do
-    echo "Running Qwen3-8B AGC-Agent on ${DATA} with k=${k}..."
+    echo "Running Qwen AGC-Agent on ${DATA} with k=${k}..."
 
     # Build command
     CMD="python agc_reasoning_qwen.py \
@@ -75,6 +82,11 @@ for DATA in ${DATA_LIST}; do
       --quant ${QUANT} \
       --gpu_id ${GPU_ID}"
 
+    # Add --skip_all_termination flag if enabled (recommended for base Qwen models)
+    if [ "${SKIP_ALL_TERMINATION}" = "true" ]; then
+      CMD="${CMD} --skip_all_termination"
+    fi
+
     # Add --filter_mid flag if enabled
     if [ "${FILTER_MID}" = "true" ]; then
       CMD="${CMD} --filter_mid"
@@ -85,4 +97,4 @@ for DATA in ${DATA_LIST}; do
   done
 done
 
-echo "Qwen3-8B AGC-Agent reasoning completed!"
+echo "Qwen AGC-Agent reasoning completed!"

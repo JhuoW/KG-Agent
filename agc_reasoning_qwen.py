@@ -1,13 +1,13 @@
 """
-AGC-Agent Reasoning Script for Qwen3-8B with Multi-GPU Support.
+AGC-Agent Reasoning Script for Qwen models with Multi-GPU Support.
 
 This script implements the main entry point for running AGC-Agent on KGQA datasets
-using Qwen3-8B as the backbone LLM instead of the GCR-finetuned Llama model.
+using Qwen models (Qwen2.5-7B-Instruct, Qwen3-8B, etc.) as the backbone LLM.
 
 Key differences from agc_reasoning.py:
-- Uses Qwen3-8B model with enable_thinking=False for structured KG reasoning
-- Uses Qwen3-specific generation parameters (temp=0.7, top_p=0.8 for sampling)
-- Handles Qwen3's larger vocabulary size (~151,936 tokens)
+- Uses Qwen models with structured KG reasoning
+- Uses Qwen-specific generation parameters
+- Handles Qwen's vocabulary and chat template
 
 Usage:
     # Single GPU
@@ -39,7 +39,7 @@ from agc_agent_qwen import QwenAGCAgent, QwenAGCAgentConfig, QwenSimplifiedAGCAg
 
 
 class QwenReasoningModel:
-    """Wrapper for the Qwen3-8B LLM used in AGC-Agent."""
+    """Wrapper for Qwen LLMs used in AGC-Agent."""
 
     DTYPE = {"fp32": torch.float32, "fp16": torch.float16, "bf16": torch.bfloat16}
 
@@ -50,8 +50,8 @@ class QwenReasoningModel:
     def add_args(parser):
         """Add model-related arguments."""
         parser.add_argument("--model_path", type=str,
-                          default="Qwen/Qwen3-8B",
-                          help="HuggingFace model path for Qwen3-8B")
+                          default="Qwen/Qwen2.5-7B-Instruct",
+                          help="HuggingFace model path for Qwen model")
         parser.add_argument("--maximum_token", type=int, default=4096,
                           help="Max input length")
         parser.add_argument("--max_new_tokens", type=int, default=1024,
@@ -80,10 +80,10 @@ class QwenReasoningModel:
         adapter_config = Path(model_path) / "adapter_config.json"
         with open(adapter_config) as f:
             config = json.load(f)
-        return config.get("base_model_name_or_path", "Qwen/Qwen3-8B")
+        return config.get("base_model_name_or_path", "Qwen/Qwen2.5-7B-Instruct")
 
     def prepare_for_inference(self):
-        """Load Qwen3-8B model and tokenizer (with PEFT adapter support)."""
+        """Load Qwen model and tokenizer (with PEFT adapter support)."""
         model_path = self.args.model_path
         is_peft = self._is_peft_adapter(model_path)
 
@@ -93,7 +93,7 @@ class QwenReasoningModel:
             print(f"Loading base model from {base_model_path}...")
         else:
             base_model_path = model_path
-            print(f"Loading Qwen3-8B model from {model_path}...")
+            print(f"Loading Qwen model from {model_path}...")
 
         # Load tokenizer from adapter path (has special tokens) or base model
         tokenizer_path = model_path if is_peft else base_model_path
@@ -102,7 +102,7 @@ class QwenReasoningModel:
             trust_remote_code=True
         )
 
-        # Ensure pad_token is set for Qwen3
+        # Ensure pad_token is set for Qwen
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
             self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
@@ -147,11 +147,11 @@ def process_sample(
     filter_mid: bool = False
 ) -> Optional[dict]:
     """
-    Process a single sample with Qwen3-8B AGC-Agent.
+    Process a single sample with Qwen AGC-Agent.
 
     Args:
         data: Sample from dataset with 'question', 'answer', 'q_entity', 'graph'
-        agent: The Qwen3-8B AGC-Agent instance
+        agent: The Qwen AGC-Agent instance
         undirected: Whether to treat graph as undirected
         filter_mid: Whether to filter out Freebase MID answers
 
@@ -179,7 +179,7 @@ def process_sample(
         triples = triples + reverse_triples
 
     try:
-        # Run Qwen3-8B AGC-Agent reasoning
+        # Run Qwen AGC-Agent reasoning
         result = agent.reason(
             question=question_for_llm,
             graph_triples=triples,
@@ -227,7 +227,7 @@ def run_worker(args, model_class):
     end_idx = args.worker_end_idx
     output_file = args.worker_output_file
 
-    print(f"[GPU {gpu_id}] Starting Qwen3-8B worker for indices {start_idx} to {end_idx}")
+    print(f"[GPU {gpu_id}] Starting Qwen worker for indices {start_idx} to {end_idx}")
 
     # Load dataset
     input_file = os.path.join(args.data_path, args.d)
@@ -237,13 +237,13 @@ def run_worker(args, model_class):
     dataset_indices = list(range(start_idx, end_idx))
     dataset = full_dataset.select(dataset_indices)
 
-    print(f"[GPU {gpu_id}] Processing {len(dataset)} samples with Qwen3-8B")
+    print(f"[GPU {gpu_id}] Processing {len(dataset)} samples with Qwen")
 
-    # Initialize Qwen3-8B model
+    # Initialize Qwen model
     model_wrapper = model_class(args)
     model_wrapper.prepare_for_inference()
 
-    # Create Qwen3-8B AGC-Agent config
+    # Create Qwen AGC-Agent config
     max_depth = args.index_path_length if args.index_path_length else args.max_depth
     config = QwenAGCAgentConfig(
         beam_width=args.beam_width,
@@ -254,10 +254,11 @@ def run_worker(args, model_class):
         answer_threshold=args.answer_threshold,
         use_constrained_generation=args.use_constrained_generation,
         generation_mode=args.generation_mode,
-        output_top_k=args.k
+        output_top_k=args.k,
+        skip_all_termination=args.skip_all_termination
     )
 
-    # Create Qwen3-8B agent
+    # Create Qwen agent
     if args.simplified:
         agent = QwenSimplifiedAGCAgent(
             model=model_wrapper.model,
@@ -273,7 +274,7 @@ def run_worker(args, model_class):
 
     # Process samples
     results = []
-    for data in tqdm(dataset, desc=f"GPU {gpu_id} (Qwen3)"):
+    for data in tqdm(dataset, desc=f"GPU {gpu_id} (Qwen)"):
         result = process_sample(data, agent, args.undirected, args.filter_mid)
         if result is not None:
             results.append(result)
@@ -299,11 +300,11 @@ def main_multigpu(args, model_class):
     gpu_ids = [int(x.strip()) for x in args.gpu_id.split(",")]
     num_gpus = len(gpu_ids)
 
-    print(f"Using GPUs: {gpu_ids} for Qwen3-8B AGC-Agent")
+    print(f"Using GPUs: {gpu_ids} for Qwen AGC-Agent")
 
     # Setup output directory
     max_depth = args.index_path_length if args.index_path_length else args.max_depth
-    post_fix = f"qwen3-agc-agent-{args.generation_mode}-depth{max_depth}-k{args.k}"
+    post_fix = f"qwen-agc-agent-{args.generation_mode}-depth{max_depth}-k{args.k}"
     if args.simplified:
         post_fix = "simplified-" + post_fix
 
@@ -402,12 +403,12 @@ def main_multigpu(args, model_class):
         env = os.environ.copy()
         env["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
 
-        print(f"Launching Qwen3-8B worker for GPU {gpu_id}...")
+        print(f"Launching Qwen worker for GPU {gpu_id}...")
         p = subprocess.Popen(worker_cmd, env=env)
         processes.append(p)
 
     # Wait for all
-    print("Waiting for Qwen3-8B workers...")
+    print("Waiting for Qwen workers...")
     for p in processes:
         p.wait()
 
@@ -446,7 +447,7 @@ def main_single_gpu(args, model_class):
     """Main function for single GPU execution."""
     # Setup output directory
     max_depth = args.index_path_length if args.index_path_length else args.max_depth
-    post_fix = f"qwen3-agc-agent-{args.generation_mode}-depth{max_depth}-k{args.k}"
+    post_fix = f"qwen-agc-agent-{args.generation_mode}-depth{max_depth}-k{args.k}"
     if args.simplified:
         post_fix = "simplified-" + post_fix
 
@@ -468,13 +469,13 @@ def main_single_gpu(args, model_class):
     # Load dataset
     input_file = os.path.join(args.data_path, args.d)
     dataset = load_dataset(input_file, split=args.split)
-    print(f"Loaded {len(dataset)} samples for Qwen3-8B AGC-Agent")
+    print(f"Loaded {len(dataset)} samples for Qwen AGC-Agent")
 
-    # Initialize Qwen3-8B model
+    # Initialize Qwen model
     model_wrapper = model_class(args)
     model_wrapper.prepare_for_inference()
 
-    # Create Qwen3-8B AGC-Agent config
+    # Create Qwen AGC-Agent config
     max_depth = args.index_path_length if args.index_path_length else args.max_depth
     config = QwenAGCAgentConfig(
         beam_width=args.beam_width,
@@ -485,10 +486,11 @@ def main_single_gpu(args, model_class):
         answer_threshold=args.answer_threshold,
         use_constrained_generation=args.use_constrained_generation,
         generation_mode=args.generation_mode,
-        output_top_k=args.k
+        output_top_k=args.k,
+        skip_all_termination=args.skip_all_termination
     )
 
-    # Create Qwen3-8B agent
+    # Create Qwen agent
     if args.simplified:
         agent = QwenSimplifiedAGCAgent(
             model=model_wrapper.model,
@@ -521,7 +523,7 @@ def main_single_gpu(args, model_class):
         fout = open(output_file, 'w')
 
     # Process samples
-    for data in tqdm(dataset, desc="Qwen3-8B AGC-Agent"):
+    for data in tqdm(dataset, desc="Qwen AGC-Agent"):
         if data['id'] in processed_ids:
             continue
 
@@ -541,7 +543,7 @@ def main_single_gpu(args, model_class):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Qwen3-8B AGC-Agent Reasoning")
+    parser = argparse.ArgumentParser(description="Qwen AGC-Agent Reasoning")
 
     # Data arguments
     parser.add_argument('--data_path', type=str, default='rmanluo',
@@ -572,6 +574,8 @@ if __name__ == "__main__":
                        help="Top-k entities per step")
     parser.add_argument('--answer_threshold', type=float, default=0.5,
                        help="Confidence threshold for ANSWER action")
+    parser.add_argument('--skip_all_termination', action='store_true',
+                       help="Skip termination check at ALL depths (force full exploration to max_depth)")
     parser.add_argument('--k', type=int, default=10,
                        help="Number of paths to output")
     parser.add_argument('--generation_mode', type=str, default='beam',
@@ -604,7 +608,7 @@ if __name__ == "__main__":
     # Parse known args first to add model args
     args, _ = parser.parse_known_args()
 
-    # Add Qwen3-8B model arguments
+    # Add Qwen model arguments
     QwenReasoningModel.add_args(parser)
 
     # Parse all args
@@ -614,15 +618,15 @@ if __name__ == "__main__":
     args.use_constrained_generation = not args.no_constrained_generation
 
     if args.worker_mode:
-        print(f"Qwen3-8B Worker mode: GPU {args.worker_gpu}, samples {args.worker_start_idx}-{args.worker_end_idx}")
+        print(f"Qwen Worker mode: GPU {args.worker_gpu}, samples {args.worker_start_idx}-{args.worker_end_idx}")
         run_worker(args, QwenReasoningModel)
     else:
         gpu_ids = [x.strip() for x in args.gpu_id.split(",")]
 
         if len(gpu_ids) == 1:
             os.environ["CUDA_VISIBLE_DEVICES"] = gpu_ids[0]
-            print(f"Qwen3-8B Single GPU mode on GPU {gpu_ids[0]}")
+            print(f"Qwen Single GPU mode on GPU {gpu_ids[0]}")
             main_single_gpu(args, QwenReasoningModel)
         else:
-            print(f"Qwen3-8B Multi-GPU mode on GPUs {gpu_ids}")
+            print(f"Qwen Multi-GPU mode on GPUs {gpu_ids}")
             main_multigpu(args, QwenReasoningModel)

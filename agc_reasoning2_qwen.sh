@@ -24,9 +24,8 @@ ATTN_IMP=sdpa
 DTYPE=bf16
 
 # Model path (same as GCR)
-MODEL_PATH=rmanluo/GCR-Meta-Llama-3.1-8B-Instruct   # must be run under `llama3-1-8B` conda environment
-# MODEL_PATH=save_models/FT-Qwen2.5-7B-Instruct
-# MODEL_PATH=meta-llama/Meta-Llama-3.1-8B-Instruct
+# MODEL_PATH=rmanluo/GCR-Meta-Llama-3.1-8B-Instruct   # must be run under `llama3-1-8B` conda environment
+MODEL_PATH=save_models/FT-Qwen2.5-7B-Instruct
 MODEL_NAME=$(basename "$MODEL_PATH")
 
 # GPU configuration
@@ -53,8 +52,8 @@ K="10"
 
 # DEFAULT: Maximum accuracy settings
 BEAM_WIDTH=10
-RELATION_TOP_K=3
-ENTITY_TOP_K=3
+RELATION_TOP_K=5
+ENTITY_TOP_K=5
 
 # SPEED-OPTIMIZED: Best speed/accuracy trade-off (1.52x speedup, ~2.5% accuracy drop)
 # BEAM_WIDTH=8

@@ -1,31 +1,36 @@
 """
-Main Qwen3-8B AGC-Agent Class.
+Main AGC-Agent Class.
 
 Adaptive Graph-Constrained Agentic Reasoning (AGC-Agent) for Knowledge Graph
-Question Answering, specifically adapted for Qwen3-8B.
+Question Answering. Replaces the static KG-Trie approach from GCR with a dynamic,
+step-wise constrained reasoning agent.
 
-Key adaptations for Qwen3:
-- Uses enable_thinking=False for structured KG reasoning
-- Proper handling of Qwen3 tokenizer and vocab size
-- Generation parameters tuned for non-thinking mode
+This module ties together all components:
+- KG Index structures
+- Constraint Engine
+- Agentic Controller (Relation/Entity Selector, Termination Predictor)
+- Beam Manager
+- Multi-Path Aggregation
 """
 
 from typing import List, Tuple, Optional, Any, Dict
 from dataclasses import dataclass
 import torch
+import networkx as nx
 
-from .kg_index_qwen import QwenKGIndex
-from .agentic_controller_qwen import QwenAgenticController
-
-# Import common components from base agc_agent
-from agc_agent.beam_state import BeamState, BeamManager, PathAccumulator, BeamStatus
-from agc_agent.agentic_controller import TerminationAction, TerminationResult
-from agc_agent.agc_agent import AGCAgentResult
+from .kg_index import KGIndex
+from .constraint_engine import ConstraintEngine
+from .beam_state import BeamState, BeamManager, PathAccumulator, BeamStatus
+from .agentic_controller import (
+    AgenticController,
+    TerminationAction,
+    TerminationResult
+)
 
 
 @dataclass
-class QwenAGCAgentConfig:
-    """Configuration for Qwen3-8B AGC-Agent."""
+class AGCAgentConfig:
+    """Configuration for AGC-Agent."""
     # Beam search parameters
     beam_width: int = 10
     max_depth: int = 2  # Aligned with GCR index_path_length
@@ -40,7 +45,7 @@ class QwenAGCAgentConfig:
     answer_threshold: float = 0.5
     min_completed_beams: int = 1
 
-    # Generation parameters (Qwen3-specific)
+    # Generation parameters (aligned with GCR)
     use_constrained_generation: bool = True
     max_new_tokens: int = 1024
     generation_mode: str = "beam"  # greedy, beam, sampling
@@ -50,43 +55,51 @@ class QwenAGCAgentConfig:
 
     # Performance optimization
     skip_termination_at_depth_zero: bool = True  # Skip termination check at depth 0
-    skip_all_termination: bool = False  # Skip termination check at ALL depths (force full exploration)
 
 
-class QwenAGCAgent:
+@dataclass
+class AGCAgentResult:
+    """Result from AGC-Agent reasoning."""
+    question: str
+    predictions: List[str]  # Formatted paths for evaluation
+    answers: List[Tuple[str, float]]  # (answer, confidence) pairs
+    reasoning_trace: Dict[str, Any]
+    raw_paths: List[Tuple[str, float]]  # (path_string, score) pairs
+
+
+class AGCAgent:
     """
-    Qwen3-8B Adaptive Graph-Constrained Agentic Reasoning Agent.
+    Adaptive Graph-Constrained Agentic Reasoning Agent.
 
-    Main interface for performing KGQA with step-wise constrained reasoning
-    using Qwen3-8B as the backbone LLM.
+    Main interface for performing KGQA with step-wise constrained reasoning.
     """
 
     def __init__(
         self,
         model: Any,
         tokenizer: Any,
-        config: Optional[QwenAGCAgentConfig] = None
+        config: Optional[AGCAgentConfig] = None
     ):
         """
-        Initialize the Qwen3-8B AGC-Agent.
+        Initialize the AGC-Agent.
 
         Args:
-            model: The Qwen3-8B model
-            tokenizer: The Qwen3 tokenizer
+            model: The KG-specialized LLM (e.g., rmanluo/GCR-Meta-Llama-3.1-8B-Instruct)
+            tokenizer: The tokenizer
             config: Agent configuration
         """
         self.model = model
         self.tokenizer = tokenizer
-        self.config = config or QwenAGCAgentConfig()
+        self.config = config or AGCAgentConfig()
 
         # These will be initialized per-question
-        self.kg_index: Optional[QwenKGIndex] = None
-        self.controller: Optional[QwenAgenticController] = None
+        self.kg_index: Optional[KGIndex] = None
+        self.controller: Optional[AgenticController] = None
         self.beam_manager: Optional[BeamManager] = None
 
-    def _build_kg_index(self, graph_triples: List[Tuple[str, str, str]]) -> QwenKGIndex:
-        """Build Qwen3-specific KG index from graph triples."""
-        kg_index = QwenKGIndex(tokenizer=self.tokenizer)
+    def _build_kg_index(self, graph_triples: List[Tuple[str, str, str]]) -> KGIndex:
+        """Build KG index from graph triples."""
+        kg_index = KGIndex(tokenizer=self.tokenizer)
         kg_index.build_from_triples(graph_triples)
         return kg_index
 
@@ -96,11 +109,11 @@ class QwenAGCAgent:
         topic_entities: List[str]
     ) -> None:
         """Initialize agent components for a new question."""
-        # Build Qwen3-specific KG index
+        # Build KG index
         self.kg_index = self._build_kg_index(graph_triples)
 
-        # Create Qwen3-specific controller
-        self.controller = QwenAgenticController(
+        # Create controller with generation mode
+        self.controller = AgenticController(
             model=self.model,
             tokenizer=self.tokenizer,
             kg_index=self.kg_index,
@@ -108,11 +121,10 @@ class QwenAGCAgent:
             relation_top_k=self.config.relation_top_k,
             entity_top_k=self.config.entity_top_k,
             answer_threshold=self.config.answer_threshold,
-            generation_mode=self.config.generation_mode,
-            skip_all_termination=self.config.skip_all_termination
+            generation_mode=self.config.generation_mode
         )
 
-        # Create beam manager (uses base implementation)
+        # Create beam manager
         self.beam_manager = BeamManager(
             beam_width=self.config.beam_width,
             max_depth=self.config.max_depth,
@@ -133,6 +145,14 @@ class QwenAGCAgent:
         """
         Run the adaptive beam search algorithm.
 
+        Algorithm from CLAUDE.md Section 3.4.5:
+        For each depth level:
+            1. Check termination for each active beam
+            2. If ANSWER: move to completed
+            3. If CONTINUE: expand with relation and entity selection
+            4. If BACKTRACK: backtrack with penalty
+            5. Prune to top-K beams
+
         Returns:
             List of completed beams
         """
@@ -144,12 +164,14 @@ class QwenAGCAgent:
             if not active_beams:
                 break
 
+            # Clear active beams for next iteration
             self.beam_manager.clear_active_beams()
 
             candidate_beams = []
 
             for beam in active_beams:
                 if not self.beam_manager.should_continue_beam(beam):
+                    # Max depth reached - complete as answer
                     candidate_beams.append(beam.complete())
                     continue
 
@@ -169,10 +191,13 @@ class QwenAGCAgent:
                 elif term_result.action == TerminationAction.BACKTRACK:
                     if new_beams:
                         candidate_beams.extend(new_beams)
+                    # If can't backtrack, beam is pruned
 
+            # Set active beams and prune
             self.beam_manager.set_active_beams(candidate_beams)
             self.beam_manager.prune_to_top_k()
 
+        # Collect all results
         return self.beam_manager.get_all_results()
 
     def reason(
@@ -203,6 +228,7 @@ class QwenAGCAgent:
         accumulator.add_paths(result_beams)
 
         # Format for evaluation using LLM-based answer extraction
+        # (Section 3.5.2 of CLAUDE.md - Multi-Path Aggregation)
         predictions = accumulator.format_for_evaluation_with_llm(
             question=question,
             model=self.model,
@@ -237,31 +263,31 @@ class QwenAGCAgent:
     @classmethod
     def from_pretrained(
         cls,
-        model_path: str = "Qwen/Qwen3-8B",
-        config: Optional[QwenAGCAgentConfig] = None,
+        model_path: str,
+        config: Optional[AGCAgentConfig] = None,
         device: str = "cuda",
         dtype: torch.dtype = torch.bfloat16,
-        attn_implementation: str = "sdpa"
-    ) -> 'QwenAGCAgent':
+        attn_implementation: str = "flash_attention_2"
+    ) -> 'AGCAgent':
         """
-        Load QwenAGCAgent from a pretrained model.
+        Load AGC-Agent from a pretrained model.
 
         Args:
-            model_path: Path to the Qwen3-8B model
+            model_path: Path to the pretrained model
             config: Agent configuration
             device: Device to load model on
             dtype: Model dtype
             attn_implementation: Attention implementation
 
         Returns:
-            Initialized QwenAGCAgent
+            Initialized AGCAgent
         """
         from transformers import AutoModelForCausalLM, AutoTokenizer
 
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = AutoModelForCausalLM.from_pretrained(
             model_path,
-            dtype=dtype,
+            torch_dtype=dtype,
             attn_implementation=attn_implementation,
             trust_remote_code=True
         ).to(device)
@@ -269,24 +295,24 @@ class QwenAGCAgent:
         return cls(model=model, tokenizer=tokenizer, config=config)
 
 
-class QwenSimplifiedAGCAgent:
+class SimplifiedAGCAgent:
     """
-    Simplified Qwen3-8B AGC-Agent that uses a single LLM call per step.
+    Simplified AGC-Agent that uses a single LLM call per step.
 
     This version is more efficient but may be less accurate than the full
-    QwenAgenticController approach.
+    AgenticController approach. It generates (relation, entity) pairs directly.
     """
 
     def __init__(
         self,
         model: Any,
         tokenizer: Any,
-        config: Optional[QwenAGCAgentConfig] = None
+        config: Optional[AGCAgentConfig] = None
     ):
         """Initialize the simplified agent."""
         self.model = model
         self.tokenizer = tokenizer
-        self.config = config or QwenAGCAgentConfig()
+        self.config = config or AGCAgentConfig()
 
         # System prompt for combined selection
         self.system_prompt = """You are a Knowledge Graph Reasoning Agent. Navigate the graph step-by-step to answer questions.
@@ -302,15 +328,15 @@ Output format:
 - To stop: "STOP"
 - To select: Output the index number (1, 2, 3, etc.)"""
 
-    def _build_kg_index(self, graph_triples: List[Tuple[str, str, str]]) -> QwenKGIndex:
-        """Build Qwen3-specific KG index from graph triples."""
-        kg_index = QwenKGIndex(tokenizer=self.tokenizer)
+    def _build_kg_index(self, graph_triples: List[Tuple[str, str, str]]) -> KGIndex:
+        """Build KG index from graph triples."""
+        kg_index = KGIndex(tokenizer=self.tokenizer)
         kg_index.build_from_triples(graph_triples)
         return kg_index
 
     def _get_available_hops(
         self,
-        kg_index: QwenKGIndex,
+        kg_index: KGIndex,
         current_entity: str,
         visited: set
     ) -> List[Tuple[str, str]]:
@@ -377,20 +403,11 @@ Select the best hop (enter number) or STOP if current entity answers the questio
             {"role": "user", "content": user_prompt}
         ]
 
-        # Apply Qwen3 chat template with enable_thinking=False
-        try:
-            prompt = self.tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=True,
-                enable_thinking=False
-            )
-        except TypeError:
-            prompt = self.tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=True
-            )
+        prompt = self.tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True
+        )
 
         inputs = self.tokenizer(prompt, return_tensors="pt", add_special_tokens=False)
         input_ids = inputs.input_ids.to(self.model.device)
@@ -399,7 +416,7 @@ Select the best hop (enter number) or STOP if current entity answers the questio
             input_ids=input_ids,
             max_new_tokens=1024,
             do_sample=False,
-            pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id
+            pad_token_id=self.tokenizer.eos_token_id
         )
 
         response = self.tokenizer.decode(
@@ -444,6 +461,7 @@ Select the best hop (enter number) or STOP if current entity answers the questio
         total_explored = 0
 
         for start_entity in topic_entities:
+            # Simple DFS-like exploration
             stack = [(start_entity, [], set())]
 
             while stack and len(all_paths) < self.config.output_top_k:

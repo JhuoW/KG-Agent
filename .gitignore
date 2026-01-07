@@ -17,3 +17,4 @@ CLAUDE.md
 # results/
 Critic/trained_models/
 .vscode/
+.claude/
