@@ -8,8 +8,8 @@
 #   GPU_ID="0,1,2" bash agc_reasoning.sh
 
 DATA_PATH=rmanluo
-DATA_LIST="RoG-webqsp"
-# DATA_LIST="RoG-cwq"
+# DATA_LIST="RoG-webqsp"
+DATA_LIST="RoG-cwq"
 # DATA_LIST="RoG-webqsp RoG-cwq"
 
 SPLIT="test[:100]"
@@ -166,3 +166,17 @@ done
 # Path Answer F1: 46.01096202888759 
 # Path Answer Precision: 44.7281746031746 
 # Path Answer Recall: 71.19161747758636
+
+
+#简化termination promopt
+# Accuracy: 70.36696459016655 
+# Hit: 86.67076167076166 
+# F1: 44.30624023510583 
+# Precision: 43.67043992043992 
+# Recall: 67.82374773486335 
+# Path F1: 40.761688043887226 
+# Path Precision: 40.93458718458718 
+# Path Recall: 60.54739420629195 
+# Path Answer F1: 47.279270836679366 
+# Path Answer Precision: 46.75992550992551 
+# Path Answer Recall: 70.43180215500412

@@ -1,5 +1,5 @@
 """
-前100个问题
+前100个问题 webqsp
 Accuracy: 68.86434383638422 
 Hit: 80.0 
 F1: 39.076460717441805 
@@ -11,6 +11,20 @@ Path Recall: 68.0561566113839
 Path Answer F1: 48.14609313920996 
 Path Answer Precision: 49.25 
 Path Answer Recall: 68.85842667662091
+
+
+cwq:
+Accuracy: 73.62156862745098 
+Hit: 77.0 
+F1: 37.42312473042696 
+Precision: 30.12222222222222 
+Recall: 73.12156862745098 
+Path F1: 38.86057042583474 
+Path Precision: 41.41666666666666 
+Path Recall: 56.169691960532234 
+Path Answer F1: 48.50993503114246 
+Path Answer Precision: 42.51666666666667 
+Path Answer Recall: 71.95490196078431
 """
 import os
 import sys

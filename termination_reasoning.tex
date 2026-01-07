@@ -1,5 +1,26 @@
-\paragraph{Termination Reasoning.} After extending the path with action $a_t$, the termination predictor evaluates the updated state $s_{t+1}$ and outputs one of three decisions:
+\paragraph{Termination Reasoning.} After extending the path with action $a_t = (r_t, e_{t+1})$, the termination predictor evaluates the updated state $s_{t+1} = (e_{t+1}, \mathbf{p}_{0:t}, q)$ and outputs one of three decisions from the action space $\mathcal{A}_{\text{term}}$:
 \begin{equation}
-\pi(s_{t+1}) \in \left\{\textsc{Answer}, \textsc{Continue}, \textsc{Backtrack}\right\},
+\pi(s_{t+1}) \in \mathcal{A}_{\text{term}} = \left\{\textsc{Answer}, \textsc{Continue}, \textsc{Backtrack}\right\},
 \end{equation}
-where \textsc{Answer} indicates that $e_{t+1}$ directly answers the question, \textsc{Continue} signals that further exploration is needed, and \textsc{Backtrack} suggests the current path is unpromising. The predictor is implemented by prompting the LLM with the reasoning context---comprising the question $q$, the reasoning path $\mathbf{p}_{0:t}$, and the current entity $e_{t+1}$---and constraining the output to one of the three action tokens. The confidence score $\mathrm{conf}(\pi) = P_\theta(\pi \mid s_{t+1})$ is extracted from the softmax distribution over the first generated token's logits. To prevent premature termination, \textsc{Answer} is accepted only when $\mathrm{conf}(\textsc{Answer}) > \delta$, where $\delta$ is a threshold hyperparameter; otherwise, the decision defaults to \textsc{Continue}. For efficiency, we skip the termination check at depth zero since topic entities rarely constitute valid answers, forcing immediate exploration. When \textsc{Backtrack} is selected, the beam reverts to its previous state and incurs a multiplicative penalty $\gamma < 1$ on its cumulative score, discouraging excessive backtracking while preserving recovery from unproductive paths.
+where \textsc{Answer} indicates that the current entity $e_{t+1}$ directly answers the question, \textsc{Continue} signals that further exploration is needed, and \textsc{Backtrack} suggests the current path is unpromising.
+
+The predictor prompts the LLM with the reasoning context $\mathbf{c}_t = (q, \mathbf{p}_{0:t}, e_{t+1})$ and computes the confidence score for each action $\pi \in \mathcal{A}_{\text{term}}$ via the softmax distribution over the first generated token's logits:
+\begin{equation}
+\mathrm{conf}(\pi) = P_\theta(\pi \mid \mathbf{c}_t) = \frac{\exp(f_\theta(\pi, \mathbf{c}_t))}{\sum_{\pi' \in \mathcal{A}_{\text{term}}} \exp(f_\theta(\pi', \mathbf{c}_t))},
+\end{equation}
+where $f_\theta(\pi, \mathbf{c}_t)$ denotes the LLM's logit for the action token $\pi$ given context $\mathbf{c}_t$. The final decision follows a threshold-based rule:
+\begin{equation}
+\hat{\pi} =
+\begin{cases}
+\textsc{Answer} & \text{if } \arg\max_\pi \mathrm{conf}(\pi) = \textsc{Answer} \land \mathrm{conf}(\textsc{Answer}) \geq \delta \\
+\textsc{Continue} & \text{if } \arg\max_\pi \mathrm{conf}(\pi) = \textsc{Answer} \land \mathrm{conf}(\textsc{Answer}) < \delta \\
+\arg\max_\pi \mathrm{conf}(\pi) & \text{otherwise}
+\end{cases}
+\end{equation}
+where $\delta$ is a confidence threshold hyperparameter. This mechanism prevents premature termination by defaulting low-confidence \textsc{Answer} predictions to \textsc{Continue}.
+
+When \textsc{Backtrack} is selected, the beam reverts to its previous state and its cumulative score is updated with a multiplicative penalty:
+\begin{equation}
+\text{score}(\mathbf{b}) \leftarrow \gamma \cdot \text{score}(\mathbf{b}), \quad \gamma < 1,
+\end{equation}
+which discourages excessive backtracking while preserving recovery from unproductive paths. For efficiency, we skip the termination check at depth zero (i.e., when $t=0$) since topic entities rarely constitute valid answers, forcing immediate exploration.

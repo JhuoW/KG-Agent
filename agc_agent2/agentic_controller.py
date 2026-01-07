@@ -84,17 +84,21 @@ From entity "{current_entity}", following relation [{selected_relation}]
 <ENT>"""
 
 
-TERMINATION_PREDICTOR_SYSTEM_PROMPT = """You are a Knowledge Graph Reasoning Agent evaluating whether to continue exploration or stop.
+# TERMINATION_PREDICTOR_SYSTEM_PROMPT = """You are a Knowledge Graph Reasoning Agent evaluating whether to continue exploration or stop.
 
-You must decide one of three actions:
-1. ANSWER: The current entity is the TYPE of thing the question asks for. Stop here.
-2. CONTINUE: The current entity is an intermediate step, not the answer type. Keep exploring.
-3. BACKTRACK: The current path is unlikely to lead to the answer. Go back.
+# You must decide one of three actions:
+# 1. ANSWER: The current entity is the TYPE of thing the question asks for. Stop here.
+# 2. CONTINUE: The current entity is an intermediate step, not the answer type. Keep exploring.
+# 3. BACKTRACK: The current path is unlikely to lead to the answer. Go back.
 
-KEY PRINCIPLE: If the question asks for a specific TYPE of entity (person, place, language, date, etc.), check if the current entity matches that type.
+# KEY PRINCIPLE: If the question asks for a specific TYPE of entity (person, place, language, date, etc.), check if the current entity matches that type.
+
+# Output exactly one word: ANSWER, CONTINUE, or BACKTRACK."""
+
+
+TERMINATION_PREDICTOR_SYSTEM_PROMPT = """You are a Knowledge Graph Reasoning Agent evaluating whether to continue exploration, backtrack or stop.
 
 Output exactly one word: ANSWER, CONTINUE, or BACKTRACK."""
-
 
 TERMINATION_PREDICTOR_USER_TEMPLATE = """# Question:
 {question}
