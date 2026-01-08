@@ -8,8 +8,8 @@
 #   GPU_ID="0,1,2" bash agc_reasoning.sh
 
 DATA_PATH=rmanluo
-DATA_LIST="RoG-webqsp"
-# DATA_LIST="RoG-cwq"
+# DATA_LIST="RoG-webqsp"
+DATA_LIST="RoG-cwq"
 # DATA_LIST="RoG-webqsp RoG-cwq"
 
 SPLIT="test[:100]"
