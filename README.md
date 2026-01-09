@@ -1,15 +1,39 @@
-# AGC-Agent
+# GRACE
 
-current result:
-Accuracy: 46.173254012149 
-Hit: 61.0 
-F1: 31.83137382137911 
-Precision: 37.28015873015873 
-Recall: 36.76860802089733 
-Path F1: 34.00222127752503 
-Path Precision: 40.18333333333333 
-Path Recall: 39.89954790789636 
-Path Answer F1: 39.39404306936533 
-Path Answer 
-Precision: 45.595238095238095 
-Path Answer Recall: 46.173254012149
+## Usage:
+
+Running on RoG-webqsp:
+`GPU_ID="0,1,2" bash agc_reasoning2.sh`
+
+Results of GRACE:
+
+| Metric Category | Metric | Value |
+|-----------------|--------|-------|
+| **Overall** | Accuracy | 70.37 |
+| | Hit | 86.67 |
+| **Answer** | F1 | 44.31 |
+| | Precision | 43.67 |
+| | Recall | 67.82 |
+| **Path** | F1 | 40.76 |
+| | Precision | 40.93 |
+| | Recall | 60.55 |
+| **Path Answer** | F1 | 47.28 |
+| | Precision | 46.76 |
+| | Recall | 70.43 |
+
+
+Results of GCR:
+
+| Metric Category | Metric | Value |
+|-----------------|--------|-------|
+| **Overall** | Accuracy | 72.80 |
+| | Hit | 83.65 |
+| **Answer** | F1 | 45.17 |
+| | Precision | 42.30 |
+| | Recall | 72.43 |
+| **Path** | F1 | 51.15 |
+| | Precision | 52.59 |
+| | Recall | 69.16 |
+| **Path Answer** | F1 | 55.39 |
+| | Precision | 55.91 |
+| | Recall | 72.51 |
