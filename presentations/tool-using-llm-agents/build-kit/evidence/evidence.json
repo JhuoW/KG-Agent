@@ -1,0 +1,603 @@
+{
+  "status_legend": "source-v2          stated in the reviewed draft (QET v2, Notion, 2026-10-13)\n  source-v1          stated only in the earlier draft (Notion, 2026-10-08)\n  established        published or textbook result, checked at the cited source\n  derived            arithmetic on the drafts' definitions, recomputed by deck/numbers.py\n  illustrative       example values chosen for teaching\n  synthesis          interpretation added for this deck, marked \"(my synthesis)\"\n  hypothesis         claim the drafts propose to test",
+  "claims": [
+    {
+      "id": "C01",
+      "slides": [
+        "running-example"
+      ],
+      "claim": "For load A, load B, compare: a before c and b before c are the only required orders; (a,b,c) and (b,a,c) are two executions of one computation.",
+      "status": "source-v2",
+      "sources": [
+        "v2: motivation"
+      ],
+      "check": "Consistent with v1 Section 1.1."
+    },
+    {
+      "id": "C02",
+      "slides": [
+        "semantics-vs-serialization"
+      ],
+      "claim": "A sequence target mixes task semantics with serialization choices.",
+      "status": "source-v2",
+      "sources": [
+        "v2: motivation"
+      ],
+      "check": "Read in source."
+    },
+    {
+      "id": "C03",
+      "slides": [
+        "consequences"
+      ],
+      "claim": "Three consequences: repeated data and compute, resumption, argument availability and provenance.",
+      "status": "source-v2",
+      "sources": [
+        "v2: motivation callout"
+      ],
+      "check": "Read in source."
+    },
+    {
+      "id": "C04",
+      "slides": [
+        "funcbenchgen"
+      ],
+      "claim": "Value Not Yet Known accounts for 66.8% to 81.3% of errors across 7 models.",
+      "status": "established",
+      "sources": [
+        "fbg: Table 3, p.9"
+      ],
+      "check": "Read in full text; min 66.8% (GPT-5-mini, GPT-4.1-mini), max 81.3% (Gemini-2.5-Flash)."
+    },
+    {
+      "id": "C05",
+      "slides": [
+        "funcbenchgen"
+      ],
+      "claim": "Incorrect Value accounts for 17.9% to 33.2% of errors.",
+      "status": "established",
+      "sources": [
+        "fbg: Table 3"
+      ],
+      "check": "Read in full text."
+    },
+    {
+      "id": "C06",
+      "slides": [
+        "funcbenchgen"
+      ],
+      "claim": "Function Not Found at most 2.4%; Wrong Number of Inputs at most 0.9%.",
+      "status": "established",
+      "sources": [
+        "fbg: Table 3"
+      ],
+      "check": "Read in full text."
+    },
+    {
+      "id": "C07",
+      "slides": [
+        "funcbenchgen",
+        "baselines"
+      ],
+      "claim": "Restating known variable values after each call raised GPT-5 success from 62.5% to 81.3%.",
+      "status": "established",
+      "sources": [
+        "fbg: abstract; Section 1; Section 4.6.1; Figure 8"
+      ],
+      "check": "Numbers from abstract and Section 1; the configuration is shown only in Figure 8 (5 core nodes, averaged over connected-distractor settings), which could not be read numerically."
+    },
+    {
+      "id": "C08",
+      "slides": [
+        "failure-illustration"
+      ],
+      "claim": "Prices 1200, 600 and the wrong value 900 illustrate the two failure types.",
+      "status": "illustrative",
+      "sources": [
+        "v2: motivation"
+      ],
+      "check": "The draft's own illustration, not FuncBenchGen data; the paper's case study (Figure 9a) shows the same pattern with a value from an irrelevant function."
+    },
+    {
+      "id": "C09",
+      "slides": [
+        "hypothesis"
+      ],
+      "claim": "Central hypothesis and its testable version.",
+      "status": "hypothesis",
+      "sources": [
+        "v2: central research hypothesis",
+        "v1: abstract, Section 14.1"
+      ],
+      "check": "Stated as hypotheses in both drafts."
+    },
+    {
+      "id": "C10",
+      "slides": [
+        "hypothesis",
+        "claim-status"
+      ],
+      "claim": "No training results; self-check on 30 random DAGs (3-7 nodes) with differences 5.6e-17 (probability) and 2.2e-16 (gradient).",
+      "status": "source-v1",
+      "sources": [
+        "v1: Section 13.2"
+      ],
+      "check": "Reproduced independently by tools/selfcheck.py: 5.55e-17 for the probability; gradient checked against finite differences (4.6e-10, limited by finite-difference precision) instead of autodiff."
+    },
+    {
+      "id": "C11",
+      "slides": [
+        "augmentation-limits"
+      ],
+      "claim": "Order augmentation fits a sampling distribution and rescores shared states; one mastered order does not ensure resumption.",
+      "status": "source-v2",
+      "sources": [
+        "v2: motivation"
+      ],
+      "check": "Read in source."
+    },
+    {
+      "id": "C12",
+      "slides": [
+        "setup"
+      ],
+      "claim": "x=(u,T,o0); (s',o)=Exec_zeta(s,a); tau=(a1,o1,...,an,on,a_end*).",
+      "status": "source-v2",
+      "sources": [
+        "v2: Section 2"
+      ],
+      "check": "Notation preserved."
+    },
+    {
+      "id": "C13",
+      "slides": [
+        "setup"
+      ],
+      "claim": "The snapshot zeta is never given to the policy as privileged input.",
+      "status": "source-v1",
+      "sources": [
+        "v1: Section 3.1"
+      ],
+      "check": "Read in source."
+    },
+    {
+      "id": "C14",
+      "slides": [
+        "target-graph"
+      ],
+      "claim": "G=(V,E,A,O,K) with the flight and hotel example.",
+      "status": "source-v2",
+      "sources": [
+        "v2: Section 3"
+      ],
+      "check": "v1 Section 4.1 defines O and K differently; see conflicts in REPORT.md."
+    },
+    {
+      "id": "C15",
+      "slides": [
+        "non-interference"
+      ],
+      "claim": "W_u ∩ (R_v ∪ W_v) = ∅ and W_v ∩ (R_u ∪ W_u) = ∅ are sufficient, not necessary, for safe reordering (Bernstein conditions).",
+      "status": "established",
+      "sources": [
+        "bernstein1966",
+        "v1: Section 4.4",
+        "v2: Section 3 (states it as necessary)"
+      ],
+      "check": "Corrected: v2 phrases the condition as necessary."
+    },
+    {
+      "id": "C16",
+      "slides": [
+        "edge-sources"
+      ],
+      "claim": "lookup_address then send_message is a data dependency without write conflict.",
+      "status": "source-v1",
+      "sources": [
+        "v1: Section 4.3"
+      ],
+      "check": "update_budget/get_budget row is an illustration added for this deck."
+    },
+    {
+      "id": "C17",
+      "slides": [
+        "edge-sources"
+      ],
+      "claim": "All relevant pairs must be checked (a writes x, b unrelated, c reads x keeps a<c).",
+      "status": "source-v1",
+      "sources": [
+        "v1: Section 4.5"
+      ],
+      "check": "Read in source."
+    },
+    {
+      "id": "C18",
+      "slides": [
+        "accepted-set"
+      ],
+      "claim": "LinExt(G) and C(G) for the example; C(G) can be smaller than all truly equivalent executions.",
+      "status": "source-v2",
+      "sources": [
+        "v2: Section 3",
+        "v1: Section 4.6"
+      ],
+      "check": "Read in source."
+    },
+    {
+      "id": "C19",
+      "slides": [
+        "set-target"
+      ],
+      "claim": "SFT on one trajectory versus -log sum over C(G).",
+      "status": "source-v2",
+      "sources": [
+        "v2: solution 1"
+      ],
+      "check": "Typo corrected: the second trajectory is tau_2."
+    },
+    {
+      "id": "C20",
+      "slides": [
+        "history-dependence"
+      ],
+      "claim": "A Transformer may assign P(C|h1) != P(C|h2) for equivalent histories.",
+      "status": "source-v2",
+      "sources": [
+        "v2: Section 3.1"
+      ],
+      "check": "Follows from order-dependent inputs; no empirical claim."
+    },
+    {
+      "id": "C21",
+      "slides": [
+        "reduce-render"
+      ],
+      "claim": "Reduce/Render definitions and their constraints.",
+      "status": "source-v2",
+      "sources": [
+        "v2: Section 3.1",
+        "v1: Sections 5.2, 5.3"
+      ],
+      "check": "Read in source."
+    },
+    {
+      "id": "C22",
+      "slides": [
+        "action-probability"
+      ],
+      "claim": "Action log probability is the sum of token log probabilities including the end marker; no renormalization over correct actions.",
+      "status": "source-v2",
+      "sources": [
+        "v2: Section 3.1",
+        "v1: Sections 6.1, 6.2"
+      ],
+      "check": "Read in source."
+    },
+    {
+      "id": "C23",
+      "slides": [
+        "order-ideals"
+      ],
+      "claim": "Order ideals of a finite poset form a distributive lattice.",
+      "status": "established",
+      "sources": [
+        "textbook (Birkhoff's representation theorem)"
+      ],
+      "check": "Standard result; not checked against a specific text."
+    },
+    {
+      "id": "C24",
+      "slides": [
+        "sharing-condition"
+      ],
+      "claim": "State sharing requires deterministic accepted paths, order-invariant reduction, and no hidden memory.",
+      "status": "source-v1",
+      "sources": [
+        "v1: Sections 5.2, 5.5, 7.2"
+      ],
+      "check": "Read in source."
+    },
+    {
+      "id": "C25",
+      "slides": [
+        "ready-set",
+        "recursion"
+      ],
+      "claim": "Ready set, step scores, recursion B(I)=sum w B(I+v) with B(V)=e(V).",
+      "status": "source-v2",
+      "sources": [
+        "v2: Section 3",
+        "v1: Eqs. (17)-(18)"
+      ],
+      "check": "Base case is implicit in v2."
+    },
+    {
+      "id": "C26",
+      "slides": [
+        "worked-example"
+      ],
+      "claim": "B(empty)=0.4332 with B({A,B})=0.76, B({A})=0.38, B({B})=0.684.",
+      "status": "derived",
+      "sources": [
+        "v1: Section 13.1"
+      ],
+      "check": "Recomputed by deck/numbers.py; brute-force path sum agrees."
+    },
+    {
+      "id": "C27",
+      "slides": [
+        "forward-view"
+      ],
+      "claim": "F({A,B})=0.57, F(V)=0.456, F(V)e(V)=0.4332=B(empty).",
+      "status": "derived",
+      "sources": [
+        "v2: solution 3"
+      ],
+      "check": "Recomputed; v2's forward form omits e(V)."
+    },
+    {
+      "id": "C28",
+      "slides": [
+        "why-sharing"
+      ],
+      "claim": "Counts of orders, prefixes, completed sets, and lattice edges; 1,296 for four chains of five; counting linear extensions is #P-complete.",
+      "status": "derived",
+      "sources": [
+        "v1: Section 10.1",
+        "bw1991"
+      ],
+      "check": "Counts computed exactly; 1,296 matches v1."
+    },
+    {
+      "id": "C29",
+      "slides": [
+        "why-sharing"
+      ],
+      "claim": "Prefix caching alone cannot merge A-then-B with B-then-A.",
+      "status": "synthesis",
+      "sources": [],
+      "check": "Marked (my synthesis)."
+    },
+    {
+      "id": "C30",
+      "slides": [
+        "marginal"
+      ],
+      "claim": "L_root = E[-log B(empty)] = -log P(C(G)); B(I) <= Pr(success) when every accepted execution passes the task check.",
+      "status": "source-v2",
+      "sources": [
+        "v2: class-marginal objective",
+        "v1: Eq. (19)"
+      ],
+      "check": "Read in source."
+    },
+    {
+      "id": "C31",
+      "slides": [
+        "three-objectives"
+      ],
+      "claim": "Two-model example: L_root 0.693 for both; L_aug 1.897 versus 1.386.",
+      "status": "derived",
+      "sources": [
+        "v2: class-marginal objective"
+      ],
+      "check": "Recomputed; SFT row (0.799, 1.386) added for comparison."
+    },
+    {
+      "id": "C32",
+      "slides": [
+        "decomposition"
+      ],
+      "claim": "E_omega[-log p] = -log P(C) + H(omega) + KL(omega || p(.|C)).",
+      "status": "established",
+      "sources": [
+        "v1: Eq. (21)"
+      ],
+      "check": "Verified algebraically (cross-entropy = entropy + KL) and numerically (KL 0.511 and 0)."
+    },
+    {
+      "id": "C33",
+      "slides": [
+        "posterior-gradient"
+      ],
+      "claim": "Gradient identity and q(A|empty)=0.526, q(B|empty)=0.474 versus 0.667.",
+      "status": "derived",
+      "sources": [
+        "v1: Sections 9.1, 13.1"
+      ],
+      "check": "Recomputed; matches v1's 0.5263."
+    },
+    {
+      "id": "C34",
+      "slides": [
+        "posterior-gradient"
+      ],
+      "claim": "Marginal gradient follows the model's own success-conditioned preference.",
+      "status": "synthesis",
+      "sources": [],
+      "check": "Marked (my synthesis); consistent with v1 Section 15.3."
+    },
+    {
+      "id": "C35",
+      "slides": [
+        "transition-weights"
+      ],
+      "claim": "rho values and their sum 2.5 for mu = (0.5, 0.25, 0.25); stop-gradient surrogate value differs from the marginal loss.",
+      "status": "derived",
+      "sources": [
+        "v1: Sections 9.2-9.5, 13.1"
+      ],
+      "check": "Recomputed; sum matches v1."
+    },
+    {
+      "id": "C36",
+      "slides": [
+        "root-only-limit",
+        "prefix-effect"
+      ],
+      "claim": "Order-collapsed policy: root loss 0.536 but resume loss 2.577; mixture losses 0.755 versus 1.007.",
+      "status": "illustrative",
+      "sources": [
+        "v2: valid-prefix coverage",
+        "v1: Section 8.3"
+      ],
+      "check": "Collapsed-policy scores chosen for this deck and marked (my synthesis); losses recomputed."
+    },
+    {
+      "id": "C37",
+      "slides": [
+        "prefix-training"
+      ],
+      "claim": "mu_G = (1-lambda) delta_empty + lambda mu_cut; L = E E[-log B(I)]; K samples.",
+      "status": "source-v2",
+      "sources": [
+        "v2: valid-prefix coverage"
+      ],
+      "check": "Read in source."
+    },
+    {
+      "id": "C38",
+      "slides": [
+        "prefix-effect"
+      ],
+      "claim": "Coverage bound: nu <= kappa mu implies E_nu[1-B] <= kappa E_mu[-log B].",
+      "status": "source-v1",
+      "sources": [
+        "v1: Proposition 3, Section 12.3"
+      ],
+      "check": "Proof checked: 1 - z <= -log z for z in (0, 1]."
+    },
+    {
+      "id": "C39",
+      "slides": [
+        "training-procedure"
+      ],
+      "claim": "Algorithm 1 steps.",
+      "status": "source-v2",
+      "sources": [
+        "v2: Algorithm 1"
+      ],
+      "check": "Read in source."
+    },
+    {
+      "id": "C40",
+      "slides": [
+        "bounded-computation"
+      ],
+      "claim": "B- <= B <= B+, log gap bound, seeding, O(w N_G), N_G <= prod(l_j+1).",
+      "status": "source-v1",
+      "sources": [
+        "v1: Section 10"
+      ],
+      "check": "Bounds follow from monotonicity of the recursion in nonnegative terms."
+    },
+    {
+      "id": "C41",
+      "slides": [
+        "inference-procedure"
+      ],
+      "claim": "Algorithm 2; no access to G, lattice, B, q at inference; decoding example 0.09 x 10 versus 0.10.",
+      "status": "source-v2",
+      "sources": [
+        "v2: Algorithm 2",
+        "v1: Sections 11.2, 11.3"
+      ],
+      "check": "Read in source."
+    },
+    {
+      "id": "C42",
+      "slides": [
+        "related-methods"
+      ],
+      "claim": "Descriptions of He et al. 2025, Li et al. 2026, Chen et al. 2021, Goldberg and Nivre 2013, Kim et al. 2024.",
+      "status": "established",
+      "sources": [
+        "he2025",
+        "li2026",
+        "chen2021",
+        "goldberg2013",
+        "kim2024",
+        "v1: Section 2.2"
+      ],
+      "check": "Checked against abstracts only; LLMCompiler row marked as added for this deck."
+    },
+    {
+      "id": "C43",
+      "slides": [
+        "foundations"
+      ],
+      "claim": "Bernstein conditions, partial-order reduction, #P-completeness of counting linear extensions, CTC forward-backward.",
+      "status": "established",
+      "sources": [
+        "bernstein1966",
+        "godefroid1996",
+        "bw1991",
+        "graves2006"
+      ],
+      "check": "Bibliographic data verified via Crossref; content checked through secondary sources. CTC analogy marked (my synthesis)."
+    },
+    {
+      "id": "C44",
+      "slides": [
+        "related-methods"
+      ],
+      "claim": "Novelty is claimed only for the combination.",
+      "status": "source-v1",
+      "sources": [
+        "v1: Section 2.2"
+      ],
+      "check": "Read in source."
+    },
+    {
+      "id": "C45",
+      "slides": [
+        "assumptions"
+      ],
+      "claim": "Scope: deterministic accepted paths, finite demonstrations, conservative graphs, successful prefixes only, one accepted set per task.",
+      "status": "source-v1",
+      "sources": [
+        "v1: Sections 3.2, 15.1, 15.4, 15.6",
+        "fbg: Section 3.4"
+      ],
+      "check": "FuncBenchGen returns random incorrect outputs for invalid inputs (read in full text)."
+    },
+    {
+      "id": "C46",
+      "slides": [
+        "claim-status"
+      ],
+      "claim": "Hypotheses H1-H5.",
+      "status": "hypothesis",
+      "sources": [
+        "v1: Section 14.1"
+      ],
+      "check": "Read in source."
+    },
+    {
+      "id": "C47",
+      "slides": [
+        "baselines",
+        "metrics-falsification"
+      ],
+      "claim": "Planned baselines, controls, metrics, testbeds, and falsification criteria.",
+      "status": "source-v1",
+      "sources": [
+        "v1: Sections 14.2-14.10"
+      ],
+      "check": "Read in source."
+    },
+    {
+      "id": "C48",
+      "slides": [
+        "open-questions"
+      ],
+      "claim": "Open questions on certification, mu_cut, posterior concentration, cost, stochastic tools.",
+      "status": "source-v1",
+      "sources": [
+        "v1: Sections 8.4, 15, 16",
+        "v2: Algorithm 1"
+      ],
+      "check": "Read in source."
+    }
+  ]
+}
