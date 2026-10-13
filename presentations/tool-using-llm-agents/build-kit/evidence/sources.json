@@ -1,0 +1,85 @@
+[
+  {
+    "id": "v2",
+    "title": "Working draft, method name acronym QET, version 2",
+    "where": "Notion page 3f3730d9-83f2-80d0-a2fe-cdffe2def0ef (parent: Graph For LLM)",
+    "version": "last edited 2026-10-13T11:32Z",
+    "read": "full text",
+    "notes": "Primary source. Two inline SVG figures were not retrievable as images; their content is described in the surrounding text."
+  },
+  {
+    "id": "v1",
+    "title": "Working draft, earlier version",
+    "where": "Notion page 3ec730d9-83f2-80d8-955c-c91df4d83d65 (parent: Graph For LLM)",
+    "version": "last edited 2026-10-08T05:43Z",
+    "read": "full text",
+    "notes": "Used for definitions that v2 uses without stating (q, m, rho, B-, B+, C, epsilon), the worked-example policy scores, the evaluation plan, and the scope statements."
+  },
+  {
+    "id": "fbg",
+    "title": "Maekawa et al. Towards Reliable Benchmarking: A Contamination Free, Controllable Evaluation Framework for Multi-step LLM Function Calling. ICLR 2026.",
+    "where": "https://arxiv.org/pdf/2509.26553v2",
+    "read": "full text (19 pages, pdftotext)",
+    "notes": "Table 3 numbers read from text. Figure 8 bar heights are not machine-readable; the 62.5% to 81.3% GPT-5 figure is quoted from the abstract and Section 1."
+  },
+  {
+    "id": "he2025",
+    "title": "He et al. Order Doesn't Matter, But Reasoning Does: Training LLMs with Order-Centric Augmentation. arXiv:2502.19907.",
+    "where": "https://arxiv.org/abs/2502.19907",
+    "read": "abstract page only"
+  },
+  {
+    "id": "li2026",
+    "title": "Li, Cheng, Nicholls, Kong. De-Linearizing Agent Traces: Bayesian Inference of Latent Partial Orders for Efficient Execution. arXiv:2602.02806.",
+    "where": "https://arxiv.org/abs/2602.02806",
+    "read": "abstract page only"
+  },
+  {
+    "id": "chen2021",
+    "title": "Chen et al. Order Matters: Probabilistic Modeling of Node Sequence for Graph Generation. ICML 2021, PMLR 139:1630-1639.",
+    "where": "https://proceedings.mlr.press/v139/chen21j.html",
+    "read": "abstract page only"
+  },
+  {
+    "id": "goldberg2013",
+    "title": "Goldberg and Nivre. Training Deterministic Parsers with Non-Deterministic Oracles. TACL 1:403-414, 2013.",
+    "where": "https://aclanthology.org/Q13-1033/",
+    "read": "abstract page only"
+  },
+  {
+    "id": "kim2024",
+    "title": "Kim et al. An LLM Compiler for Parallel Function Calling. ICML 2024, PMLR 235:24370-24391.",
+    "where": "https://proceedings.mlr.press/v235/kim24y.html",
+    "read": "search-result snippets only"
+  },
+  {
+    "id": "graves2006",
+    "title": "Graves et al. Connectionist Temporal Classification. ICML 2006, 369-376.",
+    "where": "doi:10.1145/1143844.1143891",
+    "read": "Crossref metadata and secondary descriptions"
+  },
+  {
+    "id": "godefroid1996",
+    "title": "Godefroid. Partial-Order Methods for the Verification of Concurrent Systems. LNCS 1032, Springer, 1996.",
+    "where": "doi:10.1007/3-540-60761-7",
+    "read": "library catalog record and table of contents"
+  },
+  {
+    "id": "bernstein1966",
+    "title": "Bernstein. Analysis of Programs for Parallel Processing. IEEE Trans. Electronic Computers EC-15(5):757-763, 1966.",
+    "where": "doi:10.1109/PGEC.1966.264565",
+    "read": "Crossref metadata and course notes stating the conditions"
+  },
+  {
+    "id": "bw1991",
+    "title": "Brightwell and Winkler. Counting Linear Extensions. Order 8(3):225-242, 1991.",
+    "where": "doi:10.1007/BF00383444",
+    "read": "Crossref metadata and citing abstracts"
+  },
+  {
+    "id": "appworld",
+    "title": "Trivedi et al. AppWorld. ACL 2024, 16022-16076.",
+    "where": "doi:10.18653/v1/2024.acl-long.850",
+    "read": "Crossref metadata only (cited by v1)"
+  }
+]

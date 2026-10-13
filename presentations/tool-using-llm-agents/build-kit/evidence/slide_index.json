@@ -1,0 +1,534 @@
+[
+  {
+    "n": 1,
+    "id": "title",
+    "section": "intro",
+    "title_en": "Tool-Using LLM Agents",
+    "title_zh": "工具使用型大语言模型智能体",
+    "status": [],
+    "module": "s00_intro"
+  },
+  {
+    "n": 2,
+    "id": "outline",
+    "section": "intro",
+    "title_en": "Outline and status labels",
+    "title_zh": "报告结构与状态标签",
+    "status": [],
+    "module": "s00_intro"
+  },
+  {
+    "n": 3,
+    "id": "running-example",
+    "section": "mot",
+    "title_en": "Running example: two loads and one comparison",
+    "title_zh": "示例：两次读取与一次比较",
+    "status": [
+      "draft"
+    ],
+    "module": "s01_motivation"
+  },
+  {
+    "n": 4,
+    "id": "semantics-vs-serialization",
+    "section": "mot",
+    "title_en": "Task semantics and serialization choice",
+    "title_zh": "任务语义与序列化选择",
+    "status": [
+      "draft"
+    ],
+    "module": "s01_motivation"
+  },
+  {
+    "n": 5,
+    "id": "consequences",
+    "section": "mot",
+    "title_en": "Consequences for tool-using agents",
+    "title_zh": "对工具智能体的影响",
+    "status": [
+      "draft"
+    ],
+    "module": "s01_motivation"
+  },
+  {
+    "n": 6,
+    "id": "funcbenchgen",
+    "section": "mot",
+    "title_en": "Evidence from FuncBenchGen",
+    "title_zh": "FuncBenchGen 中的证据",
+    "status": [
+      "est"
+    ],
+    "module": "s01_motivation"
+  },
+  {
+    "n": 7,
+    "id": "failure-illustration",
+    "section": "mot",
+    "title_en": "Two failure types in the running example",
+    "title_zh": "示例中的两类错误",
+    "status": [
+      "draft",
+      "ill"
+    ],
+    "module": "s01_motivation"
+  },
+  {
+    "n": 8,
+    "id": "hypothesis",
+    "section": "mot",
+    "title_en": "Central research hypothesis",
+    "title_zh": "核心研究假设",
+    "status": [
+      "hyp"
+    ],
+    "module": "s01_motivation"
+  },
+  {
+    "n": 9,
+    "id": "augmentation-limits",
+    "section": "mot",
+    "title_en": "Limits of order augmentation",
+    "title_zh": "顺序增强的局限",
+    "status": [
+      "draft"
+    ],
+    "module": "s01_motivation"
+  },
+  {
+    "n": 10,
+    "id": "three-changes",
+    "section": "mot",
+    "title_en": "Three changes to the training setup",
+    "title_zh": "训练设定的三处改变",
+    "status": [
+      "draft"
+    ],
+    "module": "s01_motivation"
+  },
+  {
+    "n": 11,
+    "id": "setup",
+    "section": "setup",
+    "title_en": "Task input, environment, and demonstration",
+    "title_zh": "任务输入、环境与示范轨迹",
+    "status": [
+      "draft",
+      "draft1"
+    ],
+    "module": "s02_setup"
+  },
+  {
+    "n": 12,
+    "id": "target-graph",
+    "section": "graph",
+    "title_en": "Target execution graph",
+    "title_zh": "目标执行图",
+    "status": [
+      "draft"
+    ],
+    "module": "s03_graph"
+  },
+  {
+    "n": 13,
+    "id": "non-interference",
+    "section": "graph",
+    "title_en": "Operation record and non-interference",
+    "title_zh": "操作记录与非干扰条件",
+    "status": [
+      "draft",
+      "est"
+    ],
+    "module": "s03_graph"
+  },
+  {
+    "n": 14,
+    "id": "edge-sources",
+    "section": "graph",
+    "title_en": "Sources of dependency edges",
+    "title_zh": "依赖边的来源",
+    "status": [
+      "draft1",
+      "ill"
+    ],
+    "module": "s03_graph"
+  },
+  {
+    "n": 15,
+    "id": "accepted-set",
+    "section": "graph",
+    "title_en": "Linear extensions and accepted executions",
+    "title_zh": "线性扩展与接受执行集合",
+    "status": [
+      "draft"
+    ],
+    "module": "s03_graph"
+  },
+  {
+    "n": 16,
+    "id": "set-target",
+    "section": "graph",
+    "title_en": "From one target to a set of targets",
+    "title_zh": "从单一目标到目标集合",
+    "status": [
+      "draft"
+    ],
+    "module": "s03_graph"
+  },
+  {
+    "n": 17,
+    "id": "history-dependence",
+    "section": "state",
+    "title_en": "History dependence of a Transformer policy",
+    "title_zh": "Transformer 策略对历史顺序的依赖",
+    "status": [
+      "draft"
+    ],
+    "module": "s04_state"
+  },
+  {
+    "n": 18,
+    "id": "reduce-render",
+    "section": "state",
+    "title_en": "Reduce and Render",
+    "title_zh": "Reduce 与 Render",
+    "status": [
+      "draft",
+      "draft1"
+    ],
+    "module": "s04_state"
+  },
+  {
+    "n": 19,
+    "id": "action-probability",
+    "section": "state",
+    "title_en": "Probability of a complete action",
+    "title_zh": "完整动作的概率",
+    "status": [
+      "draft",
+      "draft1"
+    ],
+    "module": "s04_state"
+  },
+  {
+    "n": 20,
+    "id": "order-ideals",
+    "section": "dp",
+    "title_en": "Completed sets and order ideals",
+    "title_zh": "已完成集合与序理想",
+    "status": [
+      "draft",
+      "est"
+    ],
+    "module": "s05_dp"
+  },
+  {
+    "n": 21,
+    "id": "sharing-condition",
+    "section": "dp",
+    "title_en": "Condition for sharing a state",
+    "title_zh": "状态共享的条件",
+    "status": [
+      "draft",
+      "draft1"
+    ],
+    "module": "s05_dp"
+  },
+  {
+    "n": 22,
+    "id": "ready-set",
+    "section": "dp",
+    "title_en": "Ready set and step scores",
+    "title_zh": "就绪集合与单步得分",
+    "status": [
+      "draft"
+    ],
+    "module": "s05_dp"
+  },
+  {
+    "n": 23,
+    "id": "recursion",
+    "section": "dp",
+    "title_en": "Completion probability recursion",
+    "title_zh": "完成概率的递推",
+    "status": [
+      "draft",
+      "draft1"
+    ],
+    "module": "s05_dp"
+  },
+  {
+    "n": 24,
+    "id": "worked-example",
+    "section": "dp",
+    "title_en": "Worked example, step by step",
+    "title_zh": "逐步计算示例",
+    "status": [
+      "draft1",
+      "ill"
+    ],
+    "module": "s05_dp"
+  },
+  {
+    "n": 25,
+    "id": "forward-view",
+    "section": "dp",
+    "title_en": "Forward view of the same sum",
+    "title_zh": "同一求和的前向视角",
+    "status": [
+      "draft",
+      "derived"
+    ],
+    "module": "s05_dp"
+  },
+  {
+    "n": 26,
+    "id": "why-sharing",
+    "section": "dp",
+    "title_en": "Why shared states matter",
+    "title_zh": "共享状态的作用",
+    "status": [
+      "derived",
+      "est"
+    ],
+    "module": "s05_dp"
+  },
+  {
+    "n": 27,
+    "id": "marginal",
+    "section": "obj",
+    "title_en": "Marginal likelihood over accepted executions",
+    "title_zh": "接受执行集合上的边际似然",
+    "status": [
+      "draft",
+      "draft1"
+    ],
+    "module": "s06_objective"
+  },
+  {
+    "n": 28,
+    "id": "three-objectives",
+    "section": "obj",
+    "title_en": "Three objectives on two example models",
+    "title_zh": "两个示例模型上的三种目标",
+    "status": [
+      "draft",
+      "derived"
+    ],
+    "module": "s06_objective"
+  },
+  {
+    "n": 29,
+    "id": "decomposition",
+    "section": "obj",
+    "title_en": "Decomposition of the augmentation loss",
+    "title_zh": "顺序增强损失的分解",
+    "status": [
+      "draft1",
+      "est"
+    ],
+    "module": "s06_objective"
+  },
+  {
+    "n": 30,
+    "id": "posterior-gradient",
+    "section": "obj",
+    "title_en": "Posterior-weighted gradient",
+    "title_zh": "后验加权梯度",
+    "status": [
+      "draft1",
+      "derived"
+    ],
+    "module": "s06_objective"
+  },
+  {
+    "n": 31,
+    "id": "transition-weights",
+    "section": "obj",
+    "title_en": "Transition weights and the two-stage update",
+    "title_zh": "转移权重与两阶段更新",
+    "status": [
+      "draft1",
+      "derived"
+    ],
+    "module": "s06_objective"
+  },
+  {
+    "n": 32,
+    "id": "root-only-limit",
+    "section": "obj",
+    "title_en": "Limitation of root-only training",
+    "title_zh": "仅从根状态训练的局限",
+    "status": [
+      "draft",
+      "ill"
+    ],
+    "module": "s06_objective"
+  },
+  {
+    "n": 33,
+    "id": "prefix-training",
+    "section": "obj",
+    "title_en": "Training from intermediate states",
+    "title_zh": "从中间状态开始训练",
+    "status": [
+      "draft"
+    ],
+    "module": "s06_objective"
+  },
+  {
+    "n": 34,
+    "id": "prefix-effect",
+    "section": "obj",
+    "title_en": "Effect of intermediate starts",
+    "title_zh": "中间起点的作用",
+    "status": [
+      "draft1",
+      "ill",
+      "derived"
+    ],
+    "module": "s06_objective"
+  },
+  {
+    "n": 35,
+    "id": "training-procedure",
+    "section": "alg",
+    "title_en": "Training procedure (Algorithm 1)",
+    "title_zh": "训练流程（算法 1）",
+    "status": [
+      "draft"
+    ],
+    "module": "s07_algorithms"
+  },
+  {
+    "n": 36,
+    "id": "bounded-computation",
+    "section": "alg",
+    "title_en": "Exact and bounded computation",
+    "title_zh": "精确计算与有界近似",
+    "status": [
+      "draft1"
+    ],
+    "module": "s07_algorithms"
+  },
+  {
+    "n": 37,
+    "id": "inference-procedure",
+    "section": "alg",
+    "title_en": "Inference procedure (Algorithm 2)",
+    "title_zh": "推理流程（算法 2）",
+    "status": [
+      "draft",
+      "draft1"
+    ],
+    "module": "s07_algorithms"
+  },
+  {
+    "n": 38,
+    "id": "related-methods",
+    "section": "pos",
+    "title_en": "Related methods",
+    "title_zh": "相关方法",
+    "status": [
+      "est",
+      "draft1"
+    ],
+    "module": "s08_positioning"
+  },
+  {
+    "n": 39,
+    "id": "foundations",
+    "section": "pos",
+    "title_en": "Foundations from concurrency and sequence modeling",
+    "title_zh": "并发理论与序列建模中的基础",
+    "status": [
+      "est"
+    ],
+    "module": "s08_positioning"
+  },
+  {
+    "n": 40,
+    "id": "assumptions",
+    "section": "pos",
+    "title_en": "Assumptions and scope",
+    "title_zh": "假设与适用范围",
+    "status": [
+      "draft1",
+      "draft"
+    ],
+    "module": "s08_positioning"
+  },
+  {
+    "n": 41,
+    "id": "claim-status",
+    "section": "pos",
+    "title_en": "Status of the claims",
+    "title_zh": "各项主张的现状",
+    "status": [
+      "est",
+      "hyp"
+    ],
+    "module": "s08_positioning"
+  },
+  {
+    "n": 42,
+    "id": "baselines",
+    "section": "pos",
+    "title_en": "Planned baselines and controls",
+    "title_zh": "计划中的基线与控制变量",
+    "status": [
+      "draft1"
+    ],
+    "module": "s08_positioning"
+  },
+  {
+    "n": 43,
+    "id": "metrics-falsification",
+    "section": "pos",
+    "title_en": "Metrics and falsification criteria",
+    "title_zh": "评价指标与证伪标准",
+    "status": [
+      "draft1"
+    ],
+    "module": "s08_positioning"
+  },
+  {
+    "n": 44,
+    "id": "open-questions",
+    "section": "pos",
+    "title_en": "Open questions",
+    "title_zh": "待解决的问题",
+    "status": [
+      "draft1",
+      "draft"
+    ],
+    "module": "s08_positioning"
+  },
+  {
+    "n": 45,
+    "id": "summary",
+    "section": "end",
+    "title_en": "Summary",
+    "title_zh": "总结",
+    "status": [],
+    "module": "s09_summary"
+  },
+  {
+    "n": 46,
+    "id": "notation",
+    "section": "app",
+    "title_en": "Notation",
+    "title_zh": "符号表",
+    "status": [],
+    "module": "s09_summary"
+  },
+  {
+    "n": 47,
+    "id": "references",
+    "section": "app",
+    "title_en": "References",
+    "title_zh": "参考文献",
+    "status": [],
+    "module": "s09_summary"
+  }
+]
