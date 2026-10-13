@@ -282,7 +282,7 @@ def r_kv(b):
 
 
 def r_callline(b):
-    return f'<div class="callline">{html.escape(b["text"])} <span class="x">✗</span></div>'
+    return f'<div class="callline">{html.escape(b["text"])} <span class="x">×</span></div>'
 
 
 def r_flow(b):

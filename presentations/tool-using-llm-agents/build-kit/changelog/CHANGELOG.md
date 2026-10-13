@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.1.0 (2026-10-13)
+
+### Added
+- `tools/export_pdf.mjs`: PDF export, one file per language, every slide as one 1280×720 page
+  (960×540 pt) with vector text, math and diagrams. Embeds Noto Sans SC and Noto Serif SC
+  (devDependencies `@fontsource/noto-sans-sc` and `@fontsource/noto-serif-sc` 5.2.9) so the Chinese
+  PDF does not depend on the exporting machine's fonts. The export recomputes the content scale with
+  these fonts and fails if any slide overflows.
+
+### Fixed
+- Print layout: Chrome evaluates print media queries against a default Letter-width page (816 px),
+  which triggered the phone layout (stacked columns, overflowing footers). The phone layout is now
+  limited to `screen`. `html` and `body` no longer clip printed output to one page.
+- Glyph fallbacks found with Chromium's per-node font report:
+  - Unicode subscripts in the history diagram (h₁, h₂, Hₜ) fell back to Unifont in the Chinese
+    build; they are now SVG subscripts.
+  - The script 𝒥 in a lattice caption is now set in KaTeX_Caligraphic.
+  - The cross mark in failing calls is now "×", which the embedded monospace font covers.
+- The PDF export hides KaTeX's invisible MathML copy, so extracted PDF text contains each formula once.
+
 ## 1.0.0 (2026-10-13)
 
 First complete version: 47 slides, English and Simplified Chinese in one file.

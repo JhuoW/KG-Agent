@@ -11,11 +11,14 @@
     "katex": "0.16.11"
   },
   "devDependencies": {
+    "@fontsource/noto-sans-sc": "5.2.9",
+    "@fontsource/noto-serif-sc": "5.2.9",
     "playwright": "1.56.1"
   },
   "scripts": {
     "build": "python3 build.py",
     "lint": "python3 tools/lint.py",
-    "check": "node tools/check_layout.mjs"
+    "check": "node tools/check_layout.mjs",
+    "pdf": "node tools/export_pdf.mjs"
   }
 }

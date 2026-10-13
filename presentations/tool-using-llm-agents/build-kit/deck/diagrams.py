@@ -141,8 +141,8 @@ def two_histories():
     mid = _id("hist")
     b = [_defs(mid)]
     rows = [
-        (40, ["A", "o_A", "B", "o_B"], "p1", "h₁"),
-        (150, ["B", "o_B", "A", "o_A"], "p2", "h₂"),
+        (40, ["A", "o_A", "B", "o_B"], "p1", "h<tspan baseline-shift='sub' font-size='12'>1</tspan>"),
+        (150, ["B", "o_B", "A", "o_A"], "p2", "h<tspan baseline-shift='sub' font-size='12'>2</tspan>"),
     ]
     for y, toks, cls, name in rows:
         b.append(t(28, y + 30, name, "mth", anchor="middle"))
@@ -161,7 +161,8 @@ def two_histories():
     b.append(t(424, 86, "Completed: {A, B}", "small", anchor="start", zh="已完成：{A, B}"))
     b.append(t(424, 114, "flight_price = 1200", "mono", anchor="start"))
     b.append(t(424, 140, "hotel_price = 600", "mono", anchor="start"))
-    b.append(t(424, 172, "same state Hₜ", "small mg-t", anchor="start", zh="同一状态 Hₜ"))
+    ht = "H<tspan baseline-shift='sub' font-size='10'>t</tspan>"
+    b.append(t(424, 172, f"same state {ht}", "small mg-t", anchor="start", zh=f"同一状态 {ht}"))
     b.append(t(330, 236, "different token orders, identical task progress", "cap",
                zh="token 顺序不同，任务进度相同"))
     return _svg(640, 250, "".join(b), "Two histories reduced to one canonical state", "")
@@ -245,10 +246,13 @@ def lattice(edge_labels=None, node_notes=None, show_invalid=False, caption=None)
     return _svg(566, h, "".join(b), "Lattice of completed sets for A, B before C", "")
 
 
+_JG = "<tspan font-family='KaTeX_Caligraphic'>J</tspan>(G)"
+
+
 def lattice_plain():
     return lattice(show_invalid=True,
-                   caption=("valid completed sets 𝒥(G), ordered by inclusion",
-                            "合法已完成集合 𝒥(G)，按包含关系排列"))
+                   caption=(f"valid completed sets {_JG}, ordered by inclusion",
+                            f"合法已完成集合 {_JG}，按包含关系排列"))
 
 
 def _wlabels(v):

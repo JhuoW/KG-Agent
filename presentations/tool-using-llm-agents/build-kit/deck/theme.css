@@ -237,7 +237,7 @@ svg.dg .mg-t { fill: var(--merge); } svg.dg .bad-t { fill: var(--bad); }
 a { color: var(--accent); }
 
 /* narrow screens: stacked reading layout, single column */
-@media (max-width: 820px) {
+@media screen and (max-width: 820px) {
   .cols, .cards { grid-template-columns: 1fr !important; }
   .lane { grid-template-columns: 1fr; }
   .lane-steps { grid-template-columns: 1fr; }
@@ -256,6 +256,7 @@ a { color: var(--accent); }
 
 @media print {
   @page { size: 1280px 720px; margin: 0; }
+  html, body { height: auto !important; overflow: visible !important; background: var(--bg); }
   .bar, .progress { display: none !important; }
   .viewport, .deck { position: static !important; transform: none !important; width: auto !important; height: auto !important; padding: 0 !important; }
   .slide { display: flex !important; position: relative !important; width: 1280px !important; height: 720px !important; margin: 0 !important; border: 0 !important; box-shadow: none !important; padding: 38px 64px 22px !important; break-after: page; }

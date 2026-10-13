@@ -6,18 +6,19 @@ modules into one self-contained HTML file. KaTeX math is rendered at build time,
 works offline. Chinese text uses the viewer's system CJK fonts.
 
 ## Requirements
-- Python 3.10+ (standard library only; Pillow is not needed)
+- Python 3.10+ (standard library only)
 - Node.js 18+ and npm
 - Chromium for the layout check (Playwright; set `CHROMIUM_PATH` if it is not at the default path)
 
 ## Build and check
 ```bash
-npm ci                                   # pinned: katex 0.16.11, @fontsource/*, playwright 1.56.1
+npm ci                                   # pinned: katex 0.16.11, @fontsource/*, playwright 1.56.1, Noto SC 5.2.9
 python3 build.py                         # -> dist/tool-using-llm-agents.html (+ .artifact.html)
 python3 tools/lint.py                    # language rules and EN/ZH consistency, exit 1 on error
 node tools/check_layout.mjs              # overflow check, both languages; --shots DIR saves PNGs
 python3 tools/selfcheck.py               # reproduces the draft's numerical self-check
 python3 tools/make_evidence.py           # rewrites evidence/evidence.json and sources.json
+node tools/export_pdf.mjs                # -> dist/tool-using-llm-agents-en.pdf and -zh.pdf
 ```
 If `npm ci` cannot download a browser, set `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` and point
 `CHROMIUM_PATH` at an installed Chromium.
@@ -34,6 +35,7 @@ If `npm ci` cannot download a browser, set `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` 
 | `tools/render_math.mjs` | Batch KaTeX renderer (parse errors fail the build) |
 | `tools/lint.py` | Banned words, em dashes, question marks, sentence length, synthesis markers, math and number parity between EN and ZH |
 | `tools/check_layout.mjs` | Renders every slide in both languages and reports overflow |
+| `tools/export_pdf.mjs` | Prints one PDF per language, one 1280×720 page (960×540 pt) per slide, vector text; embeds Noto Sans SC / Noto Serif SC for Chinese and fails if any slide overflows |
 | `tools/selfcheck.py` | Lattice recursion versus path enumeration; posterior gradient versus finite differences |
 | `tools/make_evidence.py` | Claim-to-source map with status labels |
 | `evidence/` | `evidence.json` (48 claims), `sources.json` (13 sources, with read depth), `computed_values.json`, `slide_index.json` |
@@ -52,4 +54,4 @@ If `npm ci` cannot download a browser, set `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` 
 Arrow keys, Page Up/Down, Space and Home/End move between slides; `L` switches language; the
 toolbar also has a theme switch. `#s12` in the URL opens slide 12. Below 820 px width the deck
 switches to a scrolling reading layout. Printing from a browser produces one page per slide in
-the current language.
+the current language; `tools/export_pdf.mjs` does the same reproducibly with embedded CJK fonts.

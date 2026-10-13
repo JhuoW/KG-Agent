@@ -4,6 +4,8 @@
 | File | Content |
 |---|---|
 | `tool-using-llm-agents.html` | Self-contained deck, 47 slides, English and Simplified Chinese with a toggle (1.3 MB, works offline) |
+| `tool-using-llm-agents-en.pdf` | English PDF, every slide as one 960×540 pt page (47 pages, vector text and math) |
+| `tool-using-llm-agents-zh.pdf` | Chinese PDF, same layout, Noto Sans SC / Noto Serif SC embedded (47 pages) |
 | `tool-using-llm-agents-build-kit.zip` | Generator, content modules, evidence JSON, change logs, checks (also unpacked in `build-kit/`) |
 | `REPORT.md` | This report |
 
@@ -19,6 +21,9 @@ appendix 2 (notation, references).
 - Other renders: no horizontal scroll at 400 px width; dark theme checked.
 - The word "quotient" appears nowhere in the HTML.
 - The build is byte-for-byte reproducible.
+- PDFs: 47 pages per language and no overflow after refitting with the embedded fonts. Every
+  embedded font is an intended one (Source, KaTeX, JetBrains Mono, Noto SC), and extracted text
+  contains each formula once.
 
 ## Sources read in full text
 1. **v2 draft** (Notion, edited 2026-10-13 11:32 UTC): the primary source. Two embedded SVG figures
